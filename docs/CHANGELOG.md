@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-08-29] Prompt #15
+
+### Added
+- Terezka si může před startem sama posunout začátek výzvy („Chceš začít jindy?“ pod odpočtem, jen dnešek nebo pozdější den; event `start-changed`). Návod to na poslední straně říká.
+
+---
+
 ## [2026-08-29] Prompt #14
 
 ### Changed

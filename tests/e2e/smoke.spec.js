@@ -59,6 +59,19 @@ test.describe('Úroková kočka smoke', () => {
     await expect(page.getByText('Výzva začíná')).toBeVisible();
     await expect(page.locator('#cd')).toContainText('hodin');
     await expect(page.getByTestId('checkin-done')).toHaveCount(0);
+    // she may move the start herself while the challenge has not begun
+    await page.getByTestId('start-change').click();
+    const d = new Date(); d.setDate(d.getDate() + 3);
+    const iso = d.toISOString().slice(0, 10);
+    await page.getByTestId('start-input').fill(iso);
+    await page.getByTestId('start-save').click();
+    await expect(page.locator('#cd')).toContainText('2'); // 2 days + hours
+    await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.settings.startDate).toBe(iso);
+    // a past date is refused
+    await page.getByTestId('start-change').click();
+    await page.getByTestId('start-input').fill('2020-01-01');
+    await page.getByTestId('start-save').click();
+    await expect(page.locator('#toast')).toContainText('dnešek nebo pozdější');
   });
 
   test('first visit shows the tutorial; finishing it is remembered on the server', async ({ page }) => {
