@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-08-29] Prompt #11 — video na iPhonu
+
+### Fixed
+- Stažené video bylo AV1 (yt-dlp formát 398) — iPhone ho neumí přehrát, `ended` nikdy nepřišlo. Překódováno na H.264 720p (133 MB); `fetch-video.sh` teď vybírá avc1 a jinak překóduje. Na iOS se posun na 2:30 dělá i při play.
+- Dokoukání v nácviku (před startem) dá konfety a vysvětlující kartu místo ticha.
+
+---
+
 ## [2026-08-29] Prompt #10 — písmo s českou diakritikou
 
 ### Fixed
