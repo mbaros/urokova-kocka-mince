@@ -27,5 +27,6 @@ playwright/.cache/
 .DS_Store
 Thumbs.db
 data/
+data-*/
 __pycache__/
 .venv/

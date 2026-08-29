@@ -15,7 +15,7 @@
   <key>WorkingDirectory</key><string>/Users/martinbaros/projects/urokova-kocka-mince</string>
   <key>EnvironmentVariables</key><dict>
     <key>PATH</key><string>/Users/martinbaros/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
-    <key>ASK_REMOTE</key><string>martin1:/home/bobek/projects/urokova-kocka-mince/data/ask</string>
+    <key>ASK_REMOTE</key><string>martin1:/home/bobek/projects/urokova-kocka-mince/data/ask,martin1:/home/bobek/projects/urokova-kocka-mince/data-martas/ask</string>
     <key>ASK_MODEL</key><string>sonnet</string>
     <key>HOME</key><string>/Users/martinbaros</string>
   </dict>

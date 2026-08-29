@@ -37,7 +37,7 @@ MAX_STATE_BYTES = 512 * 1024
 # "Zeptej se Mince" — file-based IPC with a host-side worker that runs Claude Code
 # (Max subscription). The container never holds the token: it writes ask/req-*.json,
 # the worker (scripts/ask-worker.py) answers into ask/res-*.json.
-VIDEO_DIR = DATA_DIR / "video"          # self-hosted copy of the priming video (deploy/fetch-video.sh)
+VIDEO_DIR = Path(os.environ.get("VIDEO_DIR", DATA_DIR / "video"))   # self-hosted priming video (deploy/fetch-video.sh); instances may share one
 VIDEO_FILE = "priming.mp4"
 ASK_DIR = DATA_DIR / "ask"
 ASK_LOG = ASK_DIR / "log.jsonl"

@@ -15,6 +15,7 @@ ExecStart=/usr/bin/python3 %h/projects/urokova-kocka-mince/scripts/ask-worker.py
 Restart=always
 RestartSec=5
 Environment=ASK_MODEL=sonnet
+Environment=ASK_DIRS=data/ask,data-martas/ask
 
 [Install]
 WantedBy=default.target

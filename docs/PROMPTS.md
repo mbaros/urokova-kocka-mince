@@ -71,3 +71,18 @@ Kompletní přepis `app/index.html` (server sync, YouTube embed, oslava, odměny
 **Tests added/modified:** API ask mock + 422; Playwright: lekce v oslavě, kvíz den 5, Škola + chat, FAQ nabídky
 
 ---
+
+## 2026-08-29 — Prompt #16
+
+**User prompt:**
+> Udělej na serveru martin1 jednu obdobnou kopii, ta bude pro mě (Pro Marťase), na jiné adrese; začal jsem včera a mám 2 splněné. Budeme provozovat dvě instance, dvě různé URL a tokeny. Informace o instancích zapiš do repozitáře do speciálního adresáře, ať se můžu snadno vracet k opravám.
+
+**Plan:** compose s kotvou → 2 containery, sdílené video `:ro` → worker s víc frontami → `docs/instances/` → e2e → deploy → na serveru `data-martas/state.json` (start 28. 8., 2 check-iny), nová route v Caddy, `URL.txt` → ověřit obě instance.
+
+**Summary of what was done:** Vše výše (viz CHANGELOG #16).
+
+**Files changed:** `deploy/docker-compose.yml`, `deploy/deploy.sh`, `deploy/Caddyfile.snippet`, `deploy/kocka-ask-worker.service`, `deploy/com.jarabot.kocka-ask-worker.plist`, `server/main.py`, `scripts/ask-worker.py`, `.gitignore`, `docs/instances/*`, `docs/ARCHITECTURE.md`, `docs/CHANGELOG.md`, `CLAUDE.md`
+
+**Tests added/modified:** beze změny (infrastruktura); `bin/e2e-smoke` zelené
+
+---

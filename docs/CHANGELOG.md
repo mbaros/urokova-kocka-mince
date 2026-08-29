@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-29] Prompt #16 — druhá instance „martas“
+
+### Added
+- Více instancí z jedné image: `docker-compose.yml` s YAML kotvou, containery `kocka` (terezka, `data/`) a `kocka-martas` (martas, `data-martas/`), video sdílené `:ro` přes `VIDEO_DIR`. `deploy.sh` nasazuje a kontroluje obě.
+- Odpovídač obsluhuje víc front: `ASK_DIRS` (lokálně) i `ASK_REMOTE` (ssh) berou čárkou oddělený seznam; service i plist aktualizované.
+- `docs/instances/` — přehled instancí, kde jsou data, route, URL.txt, jak přidat další, běžné opravy. Tajné hodnoty zůstávají jen na serveru.
+- Instance `martas` pro taťku: start 28. 8. 2026, dva hotové dny, vlastní tajná cesta + token.
+
+---
+
 ## [2026-08-29] Prompt #15
 
 ### Added

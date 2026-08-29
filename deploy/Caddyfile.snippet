@@ -1,4 +1,4 @@
-# ── Úroková kočka ──────────────────────────────────────────────────────────
+# ── Úroková kočka — ONE BLOCK PER INSTANCE (docs/instances/), each with its own path + token ──────────────────────────────────────────────────────────
 # Paste inside the `martin1.box.yarabot.io { ... }` block of
 # /home/bobek/jarabot-metrics/Caddyfile, ABOVE the final catch-all `handle {}`.
 # Then:  docker exec qa-tracker-caddy caddy reload --config /etc/caddy/Caddyfile
@@ -20,7 +20,7 @@ handle /k/{{SECRET_PATH}}/* {
 		# strict-origin-when-cross-origin sends only the origin (never the secret path/token).
 		header Referrer-Policy "strict-origin-when-cross-origin"
 		uri strip_prefix /k/{{SECRET_PATH}}
-		reverse_proxy kocka:8000
+		reverse_proxy kocka:8000        # instance container: kocka (terezka) / kocka-martas (martas)
 	}
 	# Wrong or missing token looks exactly like a page that does not exist.
 	respond 404

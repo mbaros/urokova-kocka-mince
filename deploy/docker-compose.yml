@@ -1,26 +1,38 @@
-# Úroková kočka on martin1 — app + API in one small container, joined to the
-# shared Caddy network. Caddy (container qa-tracker-caddy, config
-# /home/bobek/jarabot-metrics/Caddyfile) routes the secret path here —
-# see deploy/Caddyfile.snippet. Progress lives in ./data on the host.
+# Úroková kočka on martin1 — one image, one container per INSTANCE (see docs/instances/).
+# Caddy (container qa-tracker-caddy, config /home/bobek/jarabot-metrics/Caddyfile) routes each
+# instance's secret path to its container — see deploy/Caddyfile.snippet. Progress lives in
+# ./data-<instance> on the host (gitignored); the priming video is shared from ./data/video.
+x-kocka: &kocka
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile
+  image: urokova-kocka:latest
+  restart: unless-stopped
+  read_only: true
+  tmpfs:
+    - /tmp
+  environment:
+    DATA_DIR: /data
+    VIDEO_DIR: /video
+  networks:
+    - caddy
+  mem_limit: 256m
+  cpus: 0.5
+
 services:
-  kocka:
-    build:
-      context: ..
-      dockerfile: deploy/Dockerfile
-    image: urokova-kocka:latest
+  kocka:                      # instance "terezka" (the original)
+    <<: *kocka
     container_name: kocka
-    restart: unless-stopped
-    read_only: true
-    tmpfs:
-      - /tmp
     volumes:
       - ../data:/data
-    environment:
-      DATA_DIR: /data
-    networks:
-      - caddy
-    mem_limit: 256m
-    cpus: 0.5
+      - ../data/video:/video:ro
+
+  kocka-martas:               # instance "martas"
+    <<: *kocka
+    container_name: kocka-martas
+    volumes:
+      - ../data-martas:/data
+      - ../data/video:/video:ro
 
 networks:
   caddy:

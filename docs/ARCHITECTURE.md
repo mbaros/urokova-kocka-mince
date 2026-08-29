@@ -11,10 +11,14 @@
 ```mermaid
 graph TB
     Phone[Telefon dcery / rodiče] -->|HTTPS  /k/SECRET/?k=TOKEN| Caddy[Caddy qa-tracker-caddy]
-    Caddy -->|"query k=TOKEN ✓ → strip_prefix"| Kocka[container kocka · FastAPI :8000]
+    Caddy -->|"/k/SECRET_T/* + k=TOKEN_T → strip_prefix"| Kocka[container kocka · instance terezka]
+    Caddy -->|"/k/SECRET_M/* + k=TOKEN_M → strip_prefix"| KockaM[container kocka-martas · instance martas]
     Caddy -->|"jinak"| NotFound[404]
     Kocka --> App[app/index.html]
     Kocka --> Data[(data/state.json + events.jsonl)]
+    KockaM --> DataM[(data-martas/…)]
+    Kocka -.->|":ro"| Video[(data/video/priming.mp4)]
+    KockaM -.->|":ro"| Video
     App -->|YouTube IFrame API| YT[YouTube]
     App -->|fonty| GF[Google Fonts]
 ```
@@ -26,8 +30,8 @@ graph TB
 | Frontend | `app/index.html` | UI (Dnes / Graf / Kočka / Odměny), matematika úročení, YouTube přehrávač + detekce konce, kočka (SVG, 6 vývojových stupňů, výbava), easter eggy, odměny, nabídky, rodičovské nastavení, sync se serverem |
 | Backend | `server/main.py` | statika + `GET/PUT /api/state`, `GET /api/events`, `GET /api/health`; atomický zápis stavu, append-only event log |
 | Reverse proxy | `deploy/Caddyfile.snippet` (v `/home/bobek/jarabot-metrics/Caddyfile`) | tajná cesta + token → 404 bez tokenu; `uri strip_prefix` |
-| Container | `deploy/Dockerfile`, `deploy/docker-compose.yml` | `python:3.12-slim`, non-root uid 1000, read-only FS, `./data` bind mount, síť `jarabot-metrics_default` |
-| Ask worker | `scripts/ask-worker.py`, `deploy/kocka-ask-worker.service` | na hostu (bobek), sleduje `data/ask/`, volá `claude -p` (Max), zapisuje odpovědi, heartbeat |
+| Container | `deploy/Dockerfile`, `deploy/docker-compose.yml` | `python:3.12-slim`, non-root uid 1000, read-only FS, síť `jarabot-metrics_default`; **jeden container na instanci** (`kocka` → `./data`, `kocka-martas` → `./data-martas`), video sdílené `:ro` — přehled v `docs/instances/` |
+| Ask worker | `scripts/ask-worker.py`, `deploy/kocka-ask-worker.service` | na hostu (bobek), sleduje fronty všech instancí (`ASK_DIRS` / `ASK_REMOTE`, čárkou oddělené), volá `claude -p` (Max), zapisuje odpovědi, heartbeat |
 | Lekce | `app/lessons.js` | 100 myšlenek + 20 kvízů + navrhované otázky, 10 kapitol |
 | Testy | `bin/e2e-smoke`, `tests/` | API contract (curl), `node --check` inline JS, Playwright mobile Chromium |
 
@@ -94,6 +98,7 @@ Eventy (`events.jsonl`, jeden JSON na řádek): `checkin`, `offer`, `withdrawal`
 |---|---|---|
 | `DATA_DIR` | `./data` (v containeru `/data`) | kam se ukládá `state.json` a `events.jsonl` |
 | `APP_DIR` | `./app` | odkud se servíruje statika |
+| `VIDEO_DIR` | `$DATA_DIR/video` (v containeru `/video`) | kde leží `priming.mp4`; sdílené mezi instancemi |
 
 ## Jak spustit lokálně
 

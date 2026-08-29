@@ -11,16 +11,18 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 git pull --ff-only
-mkdir -p data
+mkdir -p data data-martas
 docker compose -f deploy/docker-compose.yml up -d --build --remove-orphans
 
-for _ in $(seq 1 30); do
-  if docker exec kocka python -c "import urllib.request,sys;sys.exit(0 if b'\"ok\":true' in urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=2).read() else 1)" 2>/dev/null; then
-    echo "✓ kocka answers /api/health"
-    exit 0
-  fi
-  sleep 1
+rc=0
+for c in kocka kocka-martas; do   # one container per instance — keep in sync with docker-compose.yml and docs/instances/
+  ok=""
+  for _ in $(seq 1 30); do
+    if docker exec "$c" python -c "import urllib.request,sys;sys.exit(0 if b'\"ok\":true' in urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=2).read() else 1)" 2>/dev/null; then
+      ok=1; break
+    fi
+    sleep 1
+  done
+  if [ -n "$ok" ]; then echo "✓ $c answers /api/health"; else echo "✗ $c did not become healthy" >&2; docker logs --tail 30 "$c" >&2; rc=1; fi
 done
-echo "✗ kocka did not become healthy" >&2
-docker logs --tail 30 kocka >&2
-exit 1
+exit $rc

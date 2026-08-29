@@ -11,9 +11,10 @@
 - **Stack**: single-file frontend (`app/index.html`, vanilla JS, žádný build) + FastAPI backend (`server/main.py`) na Python 3.12; Docker (`deploy/`)
 - **Server**: martin1 (`martin1.box.yarabot.io`), vhost sdílený s ostatními projekty přes Caddy v containeru `qa-tracker-caddy`
 - **Project dir**: `/home/bobek/projects/urokova-kocka-mince`
-- **App port**: 8000 uvnitř containeru `kocka` (síť `jarabot-metrics_default`); zvenku jen přes Caddy
+- **Instance**: dvě (`terezka` → container `kocka`, `data/`; `martas` → `kocka-martas`, `data-martas/`), každá s vlastní tajnou URL + tokenem — **přehled a postupy v `docs/instances/`**
+- **App port**: 8000 uvnitř každého containeru (síť `jarabot-metrics_default`); zvenku jen přes Caddy
 - **Test command**: `bin/e2e-smoke` (musí být zelené před každým commitem) — API contract + `node --check` + Playwright (mobile Chromium)
-- **Data**: `data/state.json` + `data/events.jsonl` (bind mount `./data:/data`, v gitu ignorováno)
+- **Data**: `data-<inst>/state.json` + `events.jsonl` (bind mount, v gitu ignorováno; `data/` = terezka); video sdílené z `data/video/`
 
 ## Klíčové soubory
 
@@ -22,7 +23,8 @@
 | `app/eggs.js` | 100 easter eggů + pohybová primitiva |
 | `app/index.html` | celá aplikace: styly, UI, logika úročení, kočka (SVG + easter eggy), YouTube embed, sync se serverem |
 | `server/main.py` | `GET/PUT /api/state`, `GET /api/events`, `GET /api/health`, statika |
-| `deploy/docker-compose.yml`, `deploy/Dockerfile` | container `kocka` |
+| `deploy/docker-compose.yml`, `deploy/Dockerfile` | jedna image, containery `kocka` + `kocka-martas` |
+| `docs/instances/` | provozované instance (kdo, container, data, route, postupy) |
 | `deploy/Caddyfile.snippet` | route s tajnou cestou + tokenem (hodnoty jen na serveru) |
 | `deploy/deploy.sh` | `git pull` + rebuild + healthcheck |
 | `bin/e2e-smoke` | povinný e2e runner |
@@ -98,7 +100,7 @@ ssh martin1 ~/projects/urokova-kocka-mince/deploy/deploy.sh
 |---|---|
 | Produkce | `https://martin1.box.yarabot.io/k/<SECRET_PATH>/?k=<TOKEN>` (viz poznámka Martina) |
 | Health | `…/k/<SECRET_PATH>/api/health?k=<TOKEN>` |
-| Data na serveru | `/home/bobek/projects/urokova-kocka-mince/data/` |
+| Data na serveru | `/home/bobek/projects/urokova-kocka-mince/data/` (terezka), `…/data-martas/` (martas); URL v `URL.txt` každého |
 | Caddy reload | `docker exec qa-tracker-caddy caddy reload --config /etc/caddy/Caddyfile` |
 
 <!-- BEGIN .agentic managed block — do not edit -->

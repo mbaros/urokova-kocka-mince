@@ -24,10 +24,13 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-ASK_DIR = Path(os.environ.get("ASK_DIR", ROOT / "data" / "ask"))
-# Remote mode: the ask dir lives on another machine (e.g. run this on a laptop where Claude Code
-# is logged in, against martin1): ASK_REMOTE="martin1:/home/bobek/projects/urokova-kocka-mince/data/ask"
-ASK_REMOTE = os.environ.get("ASK_REMOTE", "")
+# One ask dir per instance (docs/instances/), comma-separated. Local: ASK_DIRS="data/ask,data-martas/ask".
+ASK_DIRS = [Path(p.strip()) if os.path.isabs(p.strip()) else ROOT / p.strip() for p in os.environ.get("ASK_DIRS", os.environ.get("ASK_DIR", "data/ask,data-martas/ask")).split(",") if p.strip()]
+ASK_DIR = ASK_DIRS[0]
+# Remote mode: the ask dirs live on another machine (run this on a laptop where Claude Code is logged in):
+# ASK_REMOTE="martin1:/home/bobek/projects/urokova-kocka-mince/data/ask,martin1:/home/bobek/projects/urokova-kocka-mince/data-martas/ask"
+ASK_REMOTES = [r.strip() for r in os.environ.get("ASK_REMOTE", "").split(",") if r.strip()]
+ASK_REMOTE = ASK_REMOTES[0] if ASK_REMOTES else ""
 SSH = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10"]
 MODEL = os.environ.get("ASK_MODEL", "sonnet")
 CLAUDE_BIN = os.environ.get("CLAUDE_BIN", "claude")
@@ -113,28 +116,33 @@ def answer(req: dict) -> dict:
     return {"answer": house_style(str(data["answer"])), "followups": [house_style(str(f)) for f in (data.get("followups") or [])][:3]}
 
 
-def _remote() -> tuple[str, str]:
-    host, _, path = ASK_REMOTE.partition(":")
+def _remote(spec: str) -> tuple[str, str]:
+    host, _, path = spec.partition(":")
     return host, path
 
 
 def remote_heartbeat() -> None:
-    host, path = _remote()
-    subprocess.run(SSH + [host, f"touch '{path}/worker.heartbeat'"], capture_output=True, timeout=20)
+    for spec in ASK_REMOTES:
+        host, path = _remote(spec)
+        subprocess.run(SSH + [host, f"mkdir -p '{path}' && touch '{path}/worker.heartbeat'"], capture_output=True, timeout=20)
 
 
-def remote_pending() -> list[str]:
+def remote_pending(spec: str) -> list[str]:
     """Names of req-*.json on the remote without a matching res-*.json."""
-    host, path = _remote()
+    host, path = _remote(spec)
     run = subprocess.run(SSH + [host, f"cd '{path}' 2>/dev/null && ls req-*.json res-*.json 2>/dev/null"], capture_output=True, text=True, timeout=20)
     names = set(run.stdout.split())
     return sorted(n for n in names if n.startswith("req-") and n.replace("req-", "res-", 1) not in names)
 
 
 def handle_remote() -> int:
-    host, path = _remote()
+    return sum(handle_remote_one(spec) for spec in ASK_REMOTES)
+
+
+def handle_remote_one(spec: str) -> int:
+    host, path = _remote(spec)
     n = 0
-    for name in remote_pending():
+    for name in remote_pending(spec):
         run = subprocess.run(SSH + [host, f"cat '{path}/{name}'"], capture_output=True, text=True, timeout=20)
         try:
             req = json.loads(run.stdout)
@@ -153,9 +161,13 @@ def handle_remote() -> int:
 def handle_pending() -> int:
     if ASK_REMOTE:
         return handle_remote()
+    return sum(handle_local(d) for d in ASK_DIRS)
+
+
+def handle_local(ask_dir: Path) -> int:
     n = 0
-    for req_path in sorted(ASK_DIR.glob("req-*.json")):
-        res_path = ASK_DIR / req_path.name.replace("req-", "res-", 1)
+    for req_path in sorted(ask_dir.glob("req-*.json")):
+        res_path = ask_dir / req_path.name.replace("req-", "res-", 1)
         if res_path.exists():
             continue
         try:
@@ -203,17 +215,19 @@ def main() -> None:
     load_env()
     once = "--once" in sys.argv
     if ASK_REMOTE:
-        print(f"[ask-worker] remote mode → {ASK_REMOTE} (model {MODEL})", flush=True)
+        print(f"[ask-worker] remote mode → {', '.join(ASK_REMOTES)} (model {MODEL})", flush=True)
     else:
-        ASK_DIR.mkdir(parents=True, exist_ok=True)
-        print(f"[ask-worker] watching {ASK_DIR} (model {MODEL})", flush=True)
+        for d in ASK_DIRS:
+            d.mkdir(parents=True, exist_ok=True)
+        print(f"[ask-worker] watching {', '.join(map(str, ASK_DIRS))} (model {MODEL})", flush=True)
     while True:
         try:
             if probe():
                 if ASK_REMOTE:
                     remote_heartbeat()
                 else:
-                    (ASK_DIR / "worker.heartbeat").touch()
+                    for d in ASK_DIRS:
+                        (d / "worker.heartbeat").touch()
                 handle_pending()
         except Exception as exc:  # noqa: BLE001 — keep the loop alive (ssh hiccups etc.)
             print(f"[ask-worker] loop error: {exc}", flush=True)
