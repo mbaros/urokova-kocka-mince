@@ -4,6 +4,7 @@
 
 ### Added
 - Dva levely check-inu: **Základní** (video od 2:30 do konce) a **Pokročilý** (celé video). Přepínač na kartě check-inu, volba se pamatuje na serveru (`state.level`), level se zapisuje do eventu `checkin`. Začátek základního levelu je v rodičovském nastavení (`basicStart`, m:ss).
+- Video a přepínač levelu jsou vidět i během odpočtu před startem (jen náhled, vklad se nepočítá).
 
 ### Tests
 - Playwright: přepínač levelu + persist na server + zamčené nouzové tlačítko (10 scénářů, 12/12 zelené)

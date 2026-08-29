@@ -568,7 +568,9 @@ function renderCheckin(){
   if(k>=N()){el.innerHTML=`<h2>Hotovo. 100 dní. 🦁</h2><p class="small" style="margin:6px 0 0">Zůstatek ${kc(balance(),0)} je tvůj. A teď víš, jak vypadá křivka, kterou většina lidí nikdy nedokončí.</p>`;return}
   if(beforeStart()){
     el.innerHTML=`<div class="eyebrow">Výzva začíná</div><h2 style="margin-top:6px">${startAt().toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'})}</h2>
-    <div class="countdown" id="cd"></div><p class="small" style="margin:0">Zatím se tu můžeš rozkoukat — a klepnout na kočku. Od pondělí ti každé dokoukané priming video přinese <b>${kc(DEP(),0)}</b> plus úrok.</p>`;
+    <div class="countdown" id="cd"></div><p class="small" style="margin:0">Zatím se tu můžeš rozkoukat — a klepnout na kočku. Od pondělí ti každé dokoukané priming video přinese <b>${kc(DEP(),0)}</b> plus úrok.</p>
+    ${S.settings.videoUrl?`<p class="small" style="margin:12px 0 0"><b>Chceš si video vyzkoušet už teď?</b> Klidně — vklad se ale počítá až od startu.</p>${levelHtml()}${ytId(S.settings.videoUrl)?`<div class="player"><div id="ytPlayer"></div></div>`:''}`:''}`;
+    bindLevel(); if(ytId(S.settings.videoUrl))mountPlayer(ytId(S.settings.videoUrl),null);
     const tick=()=>{const ms=Math.max(0,startAt()-Date.now());const d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60;$('cd').innerHTML=`<div><div class="v num">${d}</div><div class="l">${plural(d,'den','dny','dní')}</div></div><div><div class="v num">${h}</div><div class="l">hodin</div></div><div><div class="v num">${m}</div><div class="l">minut</div></div>`;if(ms<=0){clearInterval(window._cnt);render()}};
     tick(); window._cnt=setInterval(tick,15000); return;
   }
@@ -579,20 +581,28 @@ function renderCheckin(){
   const ready=!url||(started&&left<=0);
   const lvl=S.level==='advanced'?'advanced':'basic', bs=S.settings.basicStart||0;
   el.innerHTML=`<div class="eyebrow">Dnešní check-in</div><h2 style="margin-top:6px">${url?'Pusť si priming. Až dojede, kočka si pro vklad dojde sama.':'Dnes stačí odkliknout — rodič ještě nenastavil video.'}</h2>
-  ${url?`<div class="level" role="tablist"><button data-testid="level-basic" class="${lvl==='basic'?'on':''}" id="lvlBasic">Základní<small>od ${mmss(bs*1000)} do konce</small></button><button data-testid="level-advanced" class="${lvl==='advanced'?'on':''}" id="lvlAdv">Pokročilý<small>celé video</small></button></div>`:''}
+  ${url?levelHtml():''}
   ${id?`<div class="player"><div id="ytPlayer"></div></div>`:''}
   ${url&&!id?`<a class="btn ghost" href="${esc(url)}" target="_blank" rel="noopener" id="playBtn" data-testid="play-video" style="margin-top:10px">▶ Spustit video</a>`:''}
   <div id="ytFallback" ${id?'hidden':''}>${id?`<p class="small" style="margin:8px 0">Video se tu nechce přehrát? <a href="${esc(lvl==='basic'&&bs?'https://www.youtube.com/watch?v='+id+'&t='+bs+'s':url)}" target="_blank" rel="noopener" id="playBtn2">Otevři ho na YouTube</a> a pak se vrať.</p>`:''}
     <p class="small" style="margin:8px 0" id="fbNote">${ready?'':`Nouzové tlačítko se odemkne za <b id="cnt">${mmss(left)}</b>.`}</p>
     <button class="btn gold" id="doneBtn" data-testid="checkin-done" ${ready?'':'disabled'}>🪙 Mám hotovo — připsat ${kc(DEP(),0)} + úrok</button>
   </div>`;
-  [['lvlBasic','basic'],['lvlAdv','advanced']].forEach(([i,v])=>{const b=$(i);if(b)b.addEventListener('click',()=>{if(S.level!==v){S.level=v;save();renderCheckin()}})});
+  bindLevel();
   ['playBtn','playBtn2'].forEach(i=>{const p=$(i);if(p)p.addEventListener('click',()=>{markVideoStarted(t);setTimeout(renderCheckin,300)})});
   $('doneBtn').addEventListener('click',()=>doCheckin('button'));
   if(!ready&&started){window._cnt=setInterval(()=>{const l=Math.max(0,need-(Date.now()-started));const c=$('cnt');if(c)c.textContent=mmss(l);if(l<=0){clearInterval(window._cnt);renderCheckin()}},1000)}
-  if(id){loadYT(()=>{if(!$('ytPlayer'))return;try{ytPlayer=new YT.Player('ytPlayer',{videoId:id,playerVars:{rel:0,modestbranding:1,playsinline:1,start:lvl==='basic'?bs:0},events:{
-      onStateChange:e=>{if(e.data===YT.PlayerState.PLAYING){markVideoStarted(t);const n=$('fbNote');if(n&&!$('cnt'))renderFallbackTimer(t)} if(e.data===YT.PlayerState.ENDED&&!S.checkins.some(c=>c.date===todayStr()))doCheckin('video')},
-      onError:()=>{const el=$('ytFallback');if(el)el.hidden=false}}})}catch(e){const el=$('ytFallback');if(el)el.hidden=false}})}
+  if(id)mountPlayer(id,t);
+}
+function levelHtml(){const lvl=S.level==='advanced'?'advanced':'basic', bs=S.settings.basicStart||0;
+  return `<div class="level" role="tablist"><button data-testid="level-basic" class="${lvl==='basic'?'on':''}" id="lvlBasic">Základní<small>od ${mmss(bs*1000)} do konce</small></button><button data-testid="level-advanced" class="${lvl==='advanced'?'on':''}" id="lvlAdv">Pokročilý<small>celé video</small></button></div>`}
+function bindLevel(){[['lvlBasic','basic'],['lvlAdv','advanced']].forEach(([i,v])=>{const b=$(i);if(b)b.addEventListener('click',()=>{if(S.level!==v){S.level=v;save();renderCheckin()}})})}
+// t = today's date string when the video counts as a check-in; null = just a preview (before the start)
+function mountPlayer(id,t){
+  const start=S.level==='advanced'?0:(S.settings.basicStart||0);
+  loadYT(()=>{if(!$('ytPlayer'))return;try{ytPlayer=new YT.Player('ytPlayer',{videoId:id,playerVars:{rel:0,modestbranding:1,playsinline:1,start},events:{
+      onStateChange:e=>{if(!t)return;if(e.data===YT.PlayerState.PLAYING){markVideoStarted(t);const n=$('fbNote');if(n&&!$('cnt'))renderFallbackTimer(t)} if(e.data===YT.PlayerState.ENDED&&!S.checkins.some(c=>c.date===todayStr()))doCheckin('video')},
+      onError:()=>{const el=$('ytFallback');if(el)el.hidden=false}}})}catch(e){const el=$('ytFallback');if(el)el.hidden=false}})
 }
 function renderFallbackTimer(t){ // show the emergency button countdown once the video is playing
   const started=S.videoStartedAt, need=S.settings.minMinutes*60000, n=$('fbNote'); if(!n)return;
