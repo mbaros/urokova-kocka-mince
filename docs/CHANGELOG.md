@@ -3,7 +3,7 @@
 ## [2026-08-29] Prompt #6 — úvodní návod
 
 ### Added
-- Šestistránkový úvodní tutoriál při první návštěvě (oslovení Terezky, video + levely, úrok z úroku s čísly pro den 33/66/100, kočka a easter eggy, nabídky na dnech 33/66, start). Dokončení/přeskočení se ukládá (`state.tutorialDone`, event `tutorial`). V rodičovském nastavení tlačítko „Pustit úvodní návod znovu“.
+- Šestistránkový úvodní tutoriál při první návštěvě — mluví kočka v první osobě („Ahoj Terez, já jsem Mince“), s kočkou nakreslenou na každé stránce; oslovení dcery je v nastavení (`kidName`). Obsah: video + levely, úrok z úroku s čísly pro den 33/66/100, kočka a easter eggy, nabídky na dnech 33/66, start). Dokončení/přeskočení se ukládá (`state.tutorialDone`, event `tutorial`). V rodičovském nastavení tlačítko „Pustit úvodní návod znovu“.
 
 ### Changed
 - `closeSheet()` maže obsah sheetu (dřív zůstával skrytý v DOM).

@@ -64,9 +64,9 @@ test.describe('Úroková kočka smoke', () => {
   test('first visit shows the tutorial; finishing it is remembered on the server', async ({ page }) => {
     await seed(page, { settings: STARTED });
     await page.goto('/');
-    await expect(page.getByTestId('tutorial')).toContainText('Ahoj Terezko');
+    await expect(page.getByTestId('tutorial')).toContainText('Ahoj Terez, já jsem Mince');
     for (let i = 0; i < 5; i++) await page.getByTestId('tutorial-next').click();
-    await expect(page.getByTestId('tutorial')).toContainText('Start:');
+    await expect(page.getByTestId('tutorial')).toContainText('Začínáme');await expect(page.getByTestId('tutorial-cat').locator('svg')).toBeVisible();
     await page.getByTestId('tutorial-next').click();
     await expect(page.getByTestId('tutorial')).toHaveCount(0);
     await expect(page.locator('#sync')).toHaveText(/uloženo na serveru/);
