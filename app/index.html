@@ -691,14 +691,18 @@ function renderCheckin(){
   if(!ready&&started){window._cnt=setInterval(()=>{const l=Math.max(0,need-(Date.now()-started));const c=$('cnt');if(c)c.textContent=mmss(l);if(l<=0){clearInterval(window._cnt);renderCheckin()}},1000)}
   if(serverVideo)mountLocal(t); else if(id)mountPlayer(id,t);
 }
+// Video finished before the challenge started: celebrate a little, explain why nothing was credited.
+function previewDone(){confetti(120);const cat=$('catToday')?.querySelector('svg');if(cat)runEgg(EGGS100[2],{svg:cat,fx:$('fxToday'),bubble:$('bubbleToday')});
+  openSheet(`<div class="center"><div class="tut-ic">🎬</div><h2>Dokoukáno!</h2><p class="small" style="margin:10px 0 0">Přesně takhle to bude od ${startAt().toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'})} — jen ti k tomu ještě přibude <b>${kc(DEP(),0)}</b> plus úrok, oslava a myšlenka dne. Dnes je to nácvik.</p><button class="btn primary" style="margin-top:16px" onclick="closeSheet()">Jasně</button></div>`,()=>$('sheet').classList.add('center'))}
 function localPlayerHtml(){return `<div class="player"><video id="localVideo" data-testid="local-video" controls playsinline preload="metadata" src="${serverVideo}${location.search}"></video></div>`}
 // Self-hosted video: HTML5 <video>; `ended` counts as a finished priming. t = today's date string, null = preview.
 function mountLocal(t){
   const v=$('localVideo'); if(!v)return;
   const start=S.level==='advanced'?0:(S.settings.basicStart||0);
-  v.addEventListener('loadedmetadata',()=>{if(start&&v.currentTime<start)v.currentTime=start},{once:true});
-  v.addEventListener('play',()=>{if(!t)return;markVideoStarted(t);const n=$('fbNote');if(n&&!$('cnt'))renderFallbackTimer(t)});
-  v.addEventListener('ended',()=>{if(t&&!S.checkins.some(c=>c.date===todayStr()))doCheckin('video')});
+  const seek=()=>{if(start&&v.currentTime<start-1)try{v.currentTime=start}catch(e){}};
+  v.addEventListener('loadedmetadata',seek,{once:true});
+  v.addEventListener('play',()=>{seek();if(!t)return;markVideoStarted(t);const n=$('fbNote');if(n&&!$('cnt'))renderFallbackTimer(t)});
+  v.addEventListener('ended',()=>{if(t){if(!S.checkins.some(c=>c.date===todayStr()))doCheckin('video')}else previewDone()});
   v.addEventListener('error',()=>{showFallback()});
 }
 function levelHtml(){const lvl=S.level==='advanced'?'advanced':'basic', bs=S.settings.basicStart||0;
@@ -708,7 +712,7 @@ function bindLevel(){[['lvlBasic','basic'],['lvlAdv','advanced']].forEach(([i,v]
 function mountPlayer(id,t){
   const start=S.level==='advanced'?0:(S.settings.basicStart||0);
   loadYT(()=>{if(!$('ytPlayer'))return;try{ytPlayer=new YT.Player('ytPlayer',{videoId:id,playerVars:{rel:0,modestbranding:1,playsinline:1,start},events:{
-      onStateChange:e=>{if(!t)return;if(e.data===YT.PlayerState.PLAYING){markVideoStarted(t);const n=$('fbNote');if(n&&!$('cnt'))renderFallbackTimer(t)} if(e.data===YT.PlayerState.ENDED&&!S.checkins.some(c=>c.date===todayStr()))doCheckin('video')},
+      onStateChange:e=>{if(!t){if(e.data===YT.PlayerState.ENDED)previewDone();return}if(e.data===YT.PlayerState.PLAYING){markVideoStarted(t);const n=$('fbNote');if(n&&!$('cnt'))renderFallbackTimer(t)} if(e.data===YT.PlayerState.ENDED&&!S.checkins.some(c=>c.date===todayStr()))doCheckin('video')},
       onError:showFallback}})}catch(e){showFallback()}})
 }
 function renderFallbackTimer(t){ // show the emergency button countdown once the video is playing
