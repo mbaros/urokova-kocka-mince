@@ -1,0 +1,20 @@
+# systemd --user unit for the „Zeptej se Mince“ answerer (runs Claude Code on the host).
+#
+#   mkdir -p ~/.config/systemd/user
+#   cp deploy/kocka-ask-worker.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now kocka-ask-worker
+#   sudo loginctl enable-linger bobek        # keep user services running after logout
+#   journalctl --user -u kocka-ask-worker -f
+[Unit]
+Description=Úroková kočka — ask worker (Claude Code, Max subscription)
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/projects/urokova-kocka-mince
+ExecStart=/usr/bin/python3 %h/projects/urokova-kocka-mince/scripts/ask-worker.py
+Restart=always
+RestartSec=5
+Environment=ASK_MODEL=sonnet
+
+[Install]
+WantedBy=default.target

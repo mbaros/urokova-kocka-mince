@@ -71,3 +71,27 @@
 **Date:** 2026-08-29
 
 **Decision:** 30 odměn na dnech 1, 3, 5, 8, 10, 13, … 97, 100 (max. rozestup 5) ve čtyřech typech (výbava / hračka / kulisa / titul). Vývoj kotě→lvice není odměna, jen se děje (easter egg). Denní easter egg je deterministický z data, ne z náhody, aby se při refreshi neměnil; každý 5. klik má tajný efekt.
+
+---
+
+## Decision #7: „Zeptej se Mince“ přes Claude Code na hostu (souborová IPC), ne přes API klíč
+
+**Date:** 2026-08-29
+
+**Context:** Martin chce odpovědi generovat „lokálním modelem na paušál Max“ — tedy bez placení za API tokeny, přes Claude Code přihlášené jeho Max předplatným. Container aplikace nemá (a nemá mít) přístup k jeho přihlášení.
+
+**Decision:** Container jen zapisuje požadavky do `data/ask/` a čeká na odpověď (max 90 s). Na hostu běží `scripts/ask-worker.py` jako systemd user service, volá `claude -p … --output-format json --max-turns 1 --append-system-prompt <persona Mince>` a odpověď (JSON `{answer, followups[3]}`) zapíše zpět. Heartbeat soubor říká UI, jestli je Mince „vzhůru“. Denní limit 25 dotazů.
+
+**Alternatives considered:** Anthropic API klíč v containeru (platí se za tokeny, jiná fakturace než chtěl); Claude CLI uvnitř containeru s namountovaným `~/.claude` (token by musel být zapisovatelný pro refresh, porušuje izolaci); Agent SDK (stejný problém s auth).
+
+**Rationale:** Přesně pattern z `.agentic/principles/05` a lucas-ai (brain/hands, IPC přes adresář, atomické zápisy). Token zůstává v `.env`/přihlášení hosta, nikdy v gitu ani v containeru. Vyžaduje jednorázově `claude setup-token` (Max) na martin1 — viz README/CLAUDE.md.
+
+---
+
+## Decision #8: Lekce jako statická data v repu, ne generované
+
+**Date:** 2026-08-29
+
+**Decision:** 100 myšlenek je ručně napsaný, navazující curriculum (`app/lessons.js`), ne generované za běhu. Model se používá jen na otázky navíc.
+
+**Rationale:** Konzistence, návaznost kapitol na nabídky (den 31–33, 65–66), žádná náhoda v tom, co dcera uvidí, nulová cena a žádná závislost na tom, že worker běží.

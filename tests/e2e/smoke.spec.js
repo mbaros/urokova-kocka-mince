@@ -6,12 +6,12 @@ const STORAGE_KEY = 'urokova-kocka-v1';
 const STARTED = { startDate: '2020-01-01' }; // a challenge that is already running
 
 /** State with `n` consecutive daily check-ins ending today. */
-function stateWith(n, settings = {}, extra = {}) {
+function stateWith(n, settings = {}, extra = {}, endDaysAgo = 0) {
   const checkins = [];
   const z = (k) => String(k).padStart(2, '0');
   for (let i = n - 1; i >= 0; i--) {
     const d = new Date();
-    d.setDate(d.getDate() - i);
+    d.setDate(d.getDate() - i - endDaysAgo);
     checkins.push({ date: `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}` });
   }
   return { checkins, settings: { ...STARTED, ...settings }, tutorialDone: true, ...extra };
@@ -95,17 +95,69 @@ test.describe('Úroková kočka smoke', () => {
     await page.getByTestId('sheet-next').click();
     await expect(page.locator('#sheet')).toContainText('První mince');
     await page.getByTestId('sheet-next').click();
+    // 4) Mincina myšlenka č. 1
+    await expect(page.getByTestId('lesson')).toContainText('Co jsou vlastně peníze');
+    await page.getByTestId('sheet-next').click();
     await expect(page.getByTestId('balance')).toHaveText('16'); // 16.48 rounded
     await expect(page.getByText('Dnes hotovo')).toBeVisible();
     // Second click the same day is impossible: the button is gone.
     await expect(page.getByTestId('checkin-done')).toHaveCount(0);
     // Persisted on the server, not only in this browser.
     await expect(page.locator('#sync')).toHaveText(/uloženo na serveru/);
+    await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.school.read).toEqual([1]);
     await page.evaluate((k) => localStorage.removeItem(k), STORAGE_KEY);
     await page.reload();
     await expect(page.getByTestId('balance')).toHaveText('16');
     const saved = await (await page.request.get('/api/state')).json();
     expect(saved.state.checkins).toHaveLength(1);
+  });
+
+  test('day 5 brings a quiz; a correct answer earns 2 stars and is remembered', async ({ page }) => {
+    await seed(page, stateWith(4, {}, { school: { read: [1, 2, 3, 4], quiz: {}, asked: 0 } }, 1)); // last check-in yesterday
+    await page.goto('/');
+    await page.getByTestId('checkin-done').click();
+    await page.getByTestId('sheet-next').click(); // gratulace
+    await page.getByTestId('sheet-next').click(); // vylepšení
+    await page.getByTestId('sheet-next').click(); // odměna (den 5 = klubíčko)
+    await expect(page.getByTestId('quiz')).toBeVisible();
+    await page.getByTestId('quiz').locator('[data-pick="2"]').click();
+    await expect(page.locator('.why')).toContainText('Přesně!');
+    await expect(page.locator('.stars .small')).toContainText('celkem 6'); // 4 read + 2 for the quiz (lesson 5 counts once closed)
+    await page.getByTestId('sheet-next').click();
+    await page.getByTestId('tab-school').click();
+    await expect(page.locator('#schoolTiles')).toContainText('1/1');
+    await expect(page.locator('#schoolHead')).toContainText('7 ⭐');
+    await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.school.quiz['5']).toEqual({ pick: 2, ok: true });
+  });
+
+  test('Škola tab lists chapters, opens an earlier lesson, and the chat answers (mock)', async ({ page }) => {
+    await seed(page, stateWith(12, {}, { school: { read: [1, 2, 3], quiz: {}, asked: 0 } }));
+    await page.goto('/');
+    await page.getByTestId('tab-school').click();
+    await expect(page.getByTestId('chapter-1')).toHaveClass(/done/);
+    await expect(page.getByTestId('chapter-2')).toHaveClass(/now/);
+    await expect(page.getByTestId('chapter-3')).toHaveClass(/lock/);
+    await page.getByTestId('chapter-1').click();
+    await page.locator('[data-open="7"]').click();
+    await expect(page.getByTestId('lesson')).toContainText('Kam mizí drobné');
+    await page.getByTestId('lesson-ask').click();
+    await expect(page.getByTestId('chat')).toBeVisible();
+    await page.getByTestId('ask-input').fill('Co je inflace?');
+    await page.getByTestId('ask-send').click();
+    await expect(page.locator('#chatLog .msg.cat')).toContainText('zkušební odpověď');
+    await expect(page.locator('#chips button')).toHaveCount(3);
+    await page.locator('#chips button').first().click();
+    await expect(page.locator('#chatLog .msg.me')).toHaveCount(2);
+    await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.school.asked).toBe(2);
+  });
+
+  test('the withdrawal offer explains both choices in a FAQ', async ({ page }) => {
+    await seed(page, stateWith(33));
+    await page.goto('/');
+    const faq = page.getByTestId('offer-faq');
+    await expect(faq.locator('details')).toHaveCount(5);
+    await faq.locator('summary', { hasText: 'Co se stane, když nevyberu?' }).click();
+    await expect(faq).toContainText(/za 67 dní z nich samotných bude/);
   });
 
   test('with a video set, the level toggle (základní od 2:30 / pokročilý celé) is remembered on the server', async ({ page }) => {
@@ -120,6 +172,15 @@ test.describe('Úroková kočka smoke', () => {
     expect(saved.state.level).toBe('advanced');
     // The emergency button is locked until the video has been playing for minMinutes.
     await expect(page.getByTestId('checkin-done')).toBeDisabled();
+  });
+
+  test('a self-hosted video (data/video/priming.mp4) is preferred over YouTube', async ({ page }) => {
+    const h = await (await page.request.get('/api/health')).json();
+    expect(h.video).toBe('media/priming.mp4'); // bin/e2e-smoke drops a tiny file there
+    await seed(page, stateWith(0, { videoUrl: 'https://youtu.be/dQw4w9WgXcQ' }));
+    await page.goto('/');
+    await expect(page.getByTestId('local-video')).toHaveAttribute('src', /media\/priming\.mp4/);
+    await expect(page.locator('#ytPlayer')).toHaveCount(0);
   });
 
   test('after 100 check-ins the balance is ≈ 10 008 Kč', async ({ page }) => {

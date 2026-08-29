@@ -112,7 +112,7 @@ h3{font-size:17px}
 .level button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
 .level button small{display:block;font-weight:700;font-size:11px;opacity:.75}
 .player{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000;margin:6px 0 10px}
-.player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.player iframe,.player video{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
 .countdown{display:flex;gap:8px;justify-content:center;margin:12px 0}
 .countdown>div{flex:1;background:var(--surface2);border-radius:14px;padding:10px 6px;text-align:center}
 .countdown .v{font-family:"Fredoka";font-weight:700;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
@@ -198,6 +198,55 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 .table th:first-child,.table td:first-child{text-align:left}
 details summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--muted)}
 .shake{animation:shake .5s}
+/* škola */
+.lesson-nav{display:flex;gap:8px;margin-top:14px;text-align:left}
+.lesson-nav>div{flex:1;background:var(--surface2);border-radius:14px;padding:10px 12px;min-width:0}
+.lesson-nav b{display:block;font-size:13px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lesson-p{margin:10px 0 0;color:var(--ink2);font-size:15px;line-height:1.5;text-align:left}
+.stars{display:flex;justify-content:space-between;align-items:center;margin-top:14px;background:var(--gold-soft);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:800}
+.chapter{display:inline-flex;font-size:11px;font-weight:800;background:var(--surface2);border:1.5px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--ink2)}
+.quiz{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.quiz button{text-align:left;padding:13px 14px;border-radius:14px;background:var(--surface2);border:1.5px solid var(--line);font-weight:800;font-size:14px;display:flex;justify-content:space-between;gap:8px}
+.quiz button.ok{border-color:var(--mint);background:var(--mint-soft)}
+.quiz button.bad{border-color:var(--coral);background:var(--coral-soft);opacity:.8}
+.quiz button[disabled]{cursor:default}
+.why{margin-top:10px;background:var(--mint-soft);border-radius:14px;padding:12px;font-size:13px;color:var(--ink2);text-align:left}
+.why.bad{background:var(--coral-soft)}
+.chat{display:flex;flex-direction:column;gap:10px;max-height:46vh;overflow:auto;padding:4px 0;text-align:left}
+.msg{max-width:84%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.5}
+.msg.me{align-self:flex-end;background:var(--ink);color:var(--bg);font-weight:700;border-bottom-right-radius:4px}
+.msg.cat{align-self:flex-start;background:var(--surface2);color:var(--ink2);border-bottom-left-radius:4px}
+.msg.cat b{color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chips button{padding:8px 12px;border-radius:999px;background:var(--surface2);border:1.5px solid var(--line);font-size:13px;font-weight:700;color:var(--ink2)}
+.askrow{display:flex;gap:8px;align-items:center;background:var(--surface2);border-radius:18px;padding:6px 6px 6px 14px;margin-top:12px}
+.askrow input{flex:1;background:none;border:0;font:inherit;color:var(--ink);min-width:0}
+.askrow button{padding:10px 14px;border-radius:12px;background:var(--gold);color:#241F33;font-weight:800}
+.askrow button[disabled]{opacity:.4}
+.thinking{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);padding-left:6px}
+.thinking i{width:8px;height:8px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite}
+.thinking i:nth-child(2){animation-delay:.2s}.thinking i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+.faq{display:flex;flex-direction:column;gap:8px;margin:14px 0 4px}
+.faq details{background:var(--surface2);border-radius:14px;padding:12px 14px}
+.faq summary{list-style:none;display:flex;justify-content:space-between;font-weight:800;font-size:14px;cursor:pointer;color:var(--ink)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:after{content:"▸";color:var(--muted)}
+.faq details[open] summary:after{content:"▾"}
+.faq p{margin:8px 0 0;font-size:13px;color:var(--ink2);line-height:1.5}
+.school-head{display:flex;gap:14px;align-items:center;background:linear-gradient(135deg,var(--gold-soft),var(--surface))}
+.school-head svg{width:96px;flex:0 0 96px}
+.chap{display:flex;gap:12px;align-items:center;background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:12px 14px;cursor:pointer}
+.chap.lock{opacity:.5;cursor:default}
+.chap.now{border:1.5px solid var(--gold)}
+.chap .n{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-family:"Fredoka";font-weight:600;background:var(--surface2);color:var(--muted);flex:0 0 40px}
+.chap.done .n{background:var(--mint-soft);color:var(--mint)}
+.chap.now .n{background:var(--gold-soft);color:var(--gold)}
+.chap b{display:block;font-size:14px}
+.chap span{font-size:13px;color:var(--muted)}
+.lessonlist{display:flex;flex-direction:column;gap:6px;margin:-4px 0 10px 14px}
+.lessonlist button{text-align:left;display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow);font-size:13px;font-weight:700}
+.lessonlist button small{color:var(--muted);font-weight:800;flex:0 0 28px}
 @keyframes shake{0%,100%{transform:translate(0)}20%{transform:translate(-6px,2px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-4px,1px)}80%{transform:translate(4px,-1px)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -293,6 +342,14 @@ details summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--muted)
     </div>
   </section>
 
+  <!-- ===== ŠKOLA ===== -->
+  <section class="screen" id="s-school">
+    <div class="card school-head" id="schoolHead"></div>
+    <div class="tiles" id="schoolTiles" style="grid-template-columns:1fr 1fr 1fr"></div>
+    <button class="btn ghost" id="askOpenBtn" data-testid="ask-open" style="margin-bottom:14px">💬 Zeptej se Mince na cokoli o penězích</button>
+    <div id="chapters" style="display:flex;flex-direction:column;gap:10px"></div>
+  </section>
+
   <!-- ===== ODMĚNY ===== -->
   <section class="screen" id="s-mile">
     <div class="card flat"><h2>Odměny</h2><p class="small" style="margin:4px 0 0">Každých pár dní něco nového pro kočku. Na dni 33 a 66 přijde navíc nabídka, která tě bude lákat.</p></div>
@@ -303,6 +360,7 @@ details summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--muted)
     <button class="on" data-tab="today" data-testid="tab-today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Dnes</button>
     <button data-tab="chart" data-testid="tab-chart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Graf</button>
     <button data-tab="cat" data-testid="tab-cat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14c0-4 3-7 8-7s8 3 8 7-3 6-8 6-8-2-8-6z"/><path d="M6 8L5 3l4 3"/><path d="M18 8l1-5-4 3"/><circle cx="9.5" cy="13" r=".8"/><circle cx="14.5" cy="13" r=".8"/></svg>Kočka</button>
+    <button data-tab="school" data-testid="tab-school"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>Škola</button>
     <button data-tab="mile" data-testid="tab-mile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>Odměny</button>
   </nav></div>
 </div>
@@ -310,6 +368,8 @@ details summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--muted)
 <div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
 <canvas class="confetti" id="confetti"></canvas>
 <div class="toast" id="toast"></div>
+<script src="lessons.js"></script>
+<script src="eggs.js"></script>
 <script>
 /* ============ STATE ============ */
 const KEY='urokova-kocka-v1';
@@ -322,10 +382,11 @@ const DEFAULTS={
   videoStartedAt:null,
   videoStartedFor:null,
   level:'basic',       // 'basic' = video od basicStart do konce · 'advanced' = celé video
-  tutorialDone:false
+  tutorialDone:false,
+  school:{read:[],quiz:{},asked:0}   // Mincina škola: přečtené myšlenky, odpovědi na kvízy {n:{pick,ok}}, počet otázek
 };
 let S=loadLocal();
-function normalize(o){return {...structuredClone(DEFAULTS),...o,settings:{...DEFAULTS.settings,...(o.settings||{})}}}
+function normalize(o){return {...structuredClone(DEFAULTS),...o,settings:{...DEFAULTS.settings,...(o.settings||{})},school:{...DEFAULTS.school,...(o.school||{})}}}
 function loadLocal(){try{const raw=localStorage.getItem(KEY);if(raw)return normalize(JSON.parse(raw))}catch(e){}return structuredClone(DEFAULTS)}
 let pendingEvents=[], syncTimer=null;
 function save(events){
@@ -333,19 +394,24 @@ function save(events){
   if(events)pendingEvents.push(...events);
   clearTimeout(syncTimer);syncTimer=setTimeout(pushSync,400);
 }
+// If the tab is closed right after a change, flush the pending save with a beacon.
+window.addEventListener('pagehide',()=>{if(!syncTimer)return;clearTimeout(syncTimer);syncTimer=null;const events=pendingEvents;pendingEvents=[];
+  try{navigator.sendBeacon(api('state'),new Blob([JSON.stringify({state:S,events})],{type:'application/json'}))}catch(e){}});
 
 /* ============ SERVER SYNC ============ */
 const api=p=>'api/'+p+location.search;
 function setSync(txt,err){const e=$('sync');e.textContent=txt;e.classList.toggle('err',!!err)}
 async function pushSync(){
-  const events=pendingEvents;pendingEvents=[];
+  syncTimer=null;const events=pendingEvents;pendingEvents=[];
   try{
     const r=await fetch(api('state'),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({state:S,events})});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const j=await r.json();setSync('uloženo na serveru · '+new Date(j.updatedAt).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}));
   }catch(e){pendingEvents.unshift(...events);setSync('offline — uloženo jen v tomhle telefonu, zkusím to znovu',true);setTimeout(pushSync,15000)}
 }
+let serverVideo=null; // relative URL of the self-hosted priming video, if the server has one
 async function pullSync(){
+  try{const h=await (await fetch(api('health'),{cache:'no-store'})).json();serverVideo=h.video||null}catch(e){}
   try{
     const r=await fetch(api('state'),{cache:'no-store'});
     if(r.status===404){save();return}          // server empty → seed it with what we have
@@ -466,44 +532,55 @@ function catSVG(){
   return `<svg class="cat idle" viewBox="${vb}" style="width:min(${Math.round(250*sc)}px,${Math.min(90,66*sc).toFixed(0)}vw)" role="img" aria-label="Tvoje kočka ${st.name}"><g class="root" transform="translate(100 190) scale(${sc.toFixed(2)}) translate(-100 -190)">${a}</g></svg>`;
 }
 
-/* ============ EASTER EGGS — one per day, evolving with the cat ============ */
+/* ============ EASTER EGGS — 100 tricks, one per day (app/eggs.js) ============ */
 const anim=(el,frames,opt)=>el?el.animate(frames,{fill:'none',...opt}):null;
 function particles(fx,glyphs,n,opts={}){
-  for(let i=0;i<n;i++){const s=document.createElement('span');s.textContent=glyphs[i%glyphs.length];s.style.cssText=`position:absolute;left:${40+Math.random()*20}%;top:${(opts.top??45)+Math.random()*10}%;font-size:${18+Math.random()*14}px;pointer-events:none`;fx.appendChild(s);
-    const dx=(Math.random()-.5)*140, dy=-(60+Math.random()*90);
-    s.animate([{transform:'translate(0,0) scale(.6)',opacity:0},{opacity:1,offset:.15},{transform:`translate(${dx}px,${dy}px) scale(1.1)`,opacity:0}],{duration:1100+Math.random()*500,easing:'ease-out'}).onfinish=()=>s.remove();}
+  for(let i=0;i<n;i++){const s=document.createElement('span');s.textContent=glyphs[i%glyphs.length];
+    const left=opts.fall||opts.wind?Math.random()*100:40+Math.random()*20, top=(opts.top??45)+(opts.fall?0:Math.random()*10);
+    s.style.cssText=`position:absolute;left:${left}%;top:${top}%;font-size:${18+Math.random()*14}px;pointer-events:none`;fx.appendChild(s);
+    let dx=(Math.random()-.5)*140, dy=-(60+Math.random()*90), dur=1100+Math.random()*500;
+    if(opts.fall){dx=(Math.random()-.5)*40;dy=260+Math.random()*80;dur=1800+Math.random()*900}
+    if(opts.wind){dx=260+Math.random()*120;dy=(Math.random()-.5)*80;dur=1200+Math.random()*600}
+    if(opts.slow){dy=-(40+Math.random()*60);dur=2200+Math.random()*800}
+    setTimeout(()=>s.animate([{transform:'translate(0,0) scale(.6)',opacity:0},{opacity:1,offset:.15},{transform:`translate(${dx}px,${dy}px) scale(1.1)`,opacity:0}],{duration:dur,easing:opts.fall?'linear':'ease-out'}).onfinish=()=>s.remove(),opts.fall||opts.wind?Math.random()*600:0)}
 }
 function say(ctx,txt,ms=1600){const b=ctx.bubble;b.textContent=txt;b.classList.add('on');clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove('on'),ms)}
 const q=(ctx,sel)=>ctx.svg.querySelector(sel);
-const EGGS=[
- {id:'wink',min:0,run:c=>{const e=q(c,'.eyeR'),k=e?'.1':'.45';anim(e||q(c,'.eyes'),[{transform:'scaleY(1)'},{transform:`scaleY(${k})`,offset:.4},{transform:`scaleY(${k})`,offset:.7},{transform:'scaleY(1)'}],{duration:700});say(c,'😉')}},
- {id:'purr',min:0,run:c=>{anim(c.svg,[{transform:'translate(0,0)'},{transform:'translate(1px,-1px)'},{transform:'translate(-1px,1px)'},{transform:'translate(0,0)'}],{duration:90,iterations:12});particles(c.fx,['💗','💕'],6);say(c,'prrrr…')}},
- {id:'jump',min:0,run:c=>{anim(c.svg,[{transform:'translateY(0) scale(1,1)'},{transform:'translateY(6px) scale(1.08,.9)',offset:.2},{transform:'translateY(-48px) scale(.95,1.08)',offset:.55},{transform:'translateY(0) scale(1.05,.95)',offset:.9},{transform:'translateY(0) scale(1,1)'}],{duration:800,easing:'cubic-bezier(.2,.8,.2,1)'});say(c,'hop!')}},
- {id:'roll',min:0,run:c=>{anim(c.svg,[{transform:'rotate(0)'},{transform:'rotate(360deg)'}],{duration:900,easing:'cubic-bezier(.4,0,.2,1)'});say(c,'kotrmelec!')}},
- {id:'zzz',min:0,run:c=>{const k=q(c,'.eyeR')?'.08':'.45';anim(q(c,'.eyes'),[{transform:'scaleY(1)'},{transform:`scaleY(${k})`,offset:.15},{transform:`scaleY(${k})`,offset:.85},{transform:'scaleY(1)'}],{duration:2600});particles(c.fx,['💤'],3,{top:25});say(c,'chrrr… pšt',2400)}},
- {id:'tail',min:0,run:c=>{anim(q(c,'.tail'),[{transform:'rotate(0)'},{transform:'rotate(-28deg)'},{transform:'rotate(18deg)'},{transform:'rotate(0)'}],{duration:450,iterations:4});say(c,'švih švih')}},
- {id:'stretch',min:0,run:c=>{anim(c.svg,[{transform:'scale(1,1)'},{transform:'scale(1.06,.86)',offset:.3},{transform:'scale(.94,1.14)',offset:.7},{transform:'scale(1,1)'}],{duration:1300,easing:'ease-in-out'});say(c,'áááách')}},
- {id:'sneeze',min:0,run:c=>{anim(q(c,'.head'),[{transform:'rotate(0)'},{transform:'rotate(-14deg)',offset:.45},{transform:'rotate(22deg)',offset:.6},{transform:'rotate(0)'}],{duration:700});setTimeout(()=>particles(c.fx,['💦'],4,{top:40}),380);say(c,'Hep-ČÍ!')}},
- {id:'drop',min:0,run:c=>{const d=document.createElement('span');d.textContent='💧';d.style.cssText='position:absolute;left:50%;top:-10%;font-size:26px;transform:translateX(-50%)';c.fx.appendChild(d);
-   d.animate([{top:'-10%'},{top:'26%'}],{duration:650,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'}).onfinish=()=>{d.remove();anim(c.svg,[{transform:'rotate(0)'},{transform:'rotate(-9deg)'},{transform:'rotate(9deg)'},{transform:'rotate(-7deg)'},{transform:'rotate(7deg)'},{transform:'rotate(0)'}],{duration:500});particles(c.fx,['💧','💦'],7,{top:35});say(c,'Fuj! Mokro!')}}},
- {id:'yarn',min:1,run:c=>{const y=document.createElement('span');y.textContent='🧶';y.style.cssText='position:absolute;left:-12%;bottom:8%;font-size:30px';c.fx.appendChild(y);
-   y.animate([{left:'-12%',transform:'rotate(0)'},{left:'100%',transform:'rotate(720deg)'}],{duration:1600,easing:'linear',fill:'forwards'}).onfinish=()=>y.remove();
-   anim(q(c,'.head'),[{transform:'rotate(-14deg)'},{transform:'rotate(14deg)'}],{duration:1600,easing:'linear'});setTimeout(()=>EGGS.find(e=>e.id==='jump').run(c),1500);say(c,'klubíčko!!')}},
- {id:'wave',min:1,run:c=>{anim(q(c,'.pawR'),[{transform:'rotate(0) translateY(0)'},{transform:'rotate(-70deg) translateY(-14px)'},{transform:'rotate(-40deg) translateY(-14px)'},{transform:'rotate(-70deg) translateY(-14px)'},{transform:'rotate(0) translateY(0)'}],{duration:1100});say(c,'Ahoj! 👋')}},
- {id:'dance',min:1,run:c=>{anim(c.svg,[{transform:'rotate(-10deg) translateX(-10px)'},{transform:'rotate(10deg) translateX(10px)'}],{duration:260,iterations:6,direction:'alternate'});particles(c.fx,['🎵','🎶'],5,{top:20});say(c,'♪ ♫ ♪')}},
- {id:'peek',min:1,run:c=>{anim(c.svg,[{transform:'translateY(0)'},{transform:'translateY(170px)',offset:.3},{transform:'translateY(170px)',offset:.6},{transform:'translateY(-14px)',offset:.85},{transform:'translateY(0)'}],{duration:1800,easing:'ease-in-out'});setTimeout(()=>say(c,'BAF!'),1500)}},
- {id:'laser',min:2,run:c=>{const l=document.createElement('span');l.style.cssText='position:absolute;width:10px;height:10px;border-radius:50%;background:#ff2d2d;box-shadow:0 0 10px #ff2d2d;left:20%;top:30%';c.fx.appendChild(l);
-   l.animate([{left:'20%',top:'30%'},{left:'75%',top:'20%'},{left:'60%',top:'60%'},{left:'25%',top:'55%'}],{duration:1500,easing:'ease-in-out',fill:'forwards'}).onfinish=()=>{l.remove();anim(c.svg,[{transform:'translate(0,0) scale(1)'},{transform:'translate(-40px,-20px) scale(1.05)'},{transform:'translate(0,0) scale(1)'}],{duration:500});say(c,'MÁM TĚ!')};
-   anim(q(c,'.head'),[{transform:'rotate(-12deg)'},{transform:'rotate(14deg)'},{transform:'rotate(6deg)'},{transform:'rotate(-10deg)'}],{duration:1500,easing:'ease-in-out'})}},
- {id:'flex',min:2,run:c=>{anim(q(c,'.arms')||q(c,'.body'),[{transform:'scale(1)'},{transform:'scale(1.25)'},{transform:'scale(1)'}],{duration:400,iterations:3});say(c,'💪 síla úroků')}},
- {id:'flip',min:2,run:c=>{anim(c.svg,[{transform:'scaleX(1)'},{transform:'scaleX(-1)',offset:.5},{transform:'scaleX(1)'}],{duration:1000,easing:'ease-in-out'});say(c,'tadá!')}},
- {id:'pounce',min:3,run:c=>{anim(c.svg,[{transform:'translate(0,0) scale(1,1)'},{transform:'translate(0,8px) scale(1.1,.8)',offset:.3},{transform:'translate(-60px,-40px) scale(1,1.05)',offset:.65},{transform:'translate(0,0) scale(1,1)'}],{duration:1000,easing:'cubic-bezier(.3,.7,.3,1)'});say(c,'skok šelmy')}},
- {id:'growl',min:3,run:c=>{anim(c.svg,[{transform:'scale(1)'},{transform:'scale(1.12)'},{transform:'scale(1)'}],{duration:600});document.body.classList.add('shake');setTimeout(()=>document.body.classList.remove('shake'),500);say(c,'grrrrr…')}},
- {id:'roar',min:4,run:c=>{anim(c.svg,[{transform:'scale(1)'},{transform:'scale(1.3)',offset:.3},{transform:'scale(1.25)',offset:.7},{transform:'scale(1)'}],{duration:1200});document.body.classList.add('shake');setTimeout(()=>document.body.classList.remove('shake'),500);particles(c.fx,['💥','⚡'],5,{top:30});say(c,'RAWWWR!',1800)}},
- {id:'hug',min:4,run:c=>{anim(c.svg,[{transform:'scale(1)'},{transform:'scale(1.15) translateY(10px)',offset:.4},{transform:'scale(1.15) translateY(10px)',offset:.7},{transform:'scale(1)'}],{duration:1600});particles(c.fx,['❤️','🧡'],8);say(c,'obejmutí od lvice',1800)}},
-];
-const SECRET={id:'hearts',run:c=>{particles(c.fx,['❤️','💛','💚','💙','💜'],14);anim(c.svg,[{transform:'scale(1)'},{transform:'scale(1.12)'},{transform:'scale(1)'}],{duration:500,iterations:2});say(c,'Mám tě ráda ❤️',2200)}};
-function todaysEgg(){const st=stageIdx();const pool=EGGS.filter(e=>e.min<=st);const d=Math.abs(dayIndex())+st*7;return pool[Math.floor(seeded(d+1)*pool.length)]}
+function motionDur(m){const o=MOTIONS[m]?.o||{};return (o.duration||0)*(o.iterations||1)}
+function runMotion(name,ctx){
+  const mo=MOTIONS[name]; if(!mo)return 0;
+  const targets=[]; if(mo.t.includes('|')){for(const t of mo.t.split('|')){const el=t==='svg'?ctx.svg:q(ctx,'.'+t);if(el){targets.push(el);break}}}
+  else for(const t of mo.t.split(',')){const el=t==='svg'?ctx.svg:q(ctx,'.'+t);if(el)targets.push(el)}
+  const shades=!q(ctx,'.eyeR'), eyeScale=shades?'.45':(name==='sleep'?'.08':'.1');
+  targets.forEach(el=>anim(el,mo.k(eyeScale),mo.o)); return motionDur(name);
+}
+function runProp(prop,ctx){
+  const el=document.createElement('span');
+  if(prop.g==='laser'){el.style.cssText='position:absolute;width:10px;height:10px;border-radius:50%;background:#ff2d2d;box-shadow:0 0 10px #ff2d2d;pointer-events:none'}
+  else{el.textContent=prop.g;el.style.cssText=`position:absolute;font-size:${prop.size||26}px;line-height:1;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))`}
+  ctx.fx.appendChild(el);
+  const frames=prop.path.map(([x,y],i,arr)=>{const f={left:x+'%',top:y+'%',offset:arr.length>1?i/(arr.length-1):1};
+    const rot=prop.spin?`rotate(${i*360}deg)`:prop.sway?`rotate(${i%2?18:-18}deg)`:prop.swing?`rotate(${i%2?25:-25}deg)`:prop.buzz?`rotate(${i%2?6:-6}deg)`:'';
+    f.transform=`translate(-50%,-50%) ${rot}`;return f});
+  if(frames.length===1)frames.push({...frames[0],offset:1});
+  const a=el.animate(frames,{duration:prop.dur,easing:prop.g==='laser'?'ease-in-out':'linear',fill:'forwards'});
+  if(prop.buzz)el.animate([{transform:'translate(-50%,-50%) rotate(-8deg)'},{transform:'translate(-50%,-50%) rotate(8deg)'}],{duration:80,iterations:Math.round(prop.dur/80),direction:'alternate'});
+  const stay=prop.stay||0;
+  a.onfinish=()=>setTimeout(()=>{el.animate([{opacity:1},{opacity:0}],{duration:300}).onfinish=()=>el.remove()},stay);
+  return prop.dur+stay;
+}
+function runEgg(egg,ctx){
+  let end=0;
+  (egg.m||[]).forEach(m=>{end=Math.max(end,runMotion(m,ctx))});
+  if(egg.fx)setTimeout(()=>particles(ctx.fx,egg.fx.g,egg.fx.n,egg.fx),egg.fx.delay||0);
+  if(egg.shake){document.body.classList.add('shake');setTimeout(()=>document.body.classList.remove('shake'),500)}
+  if(egg.say)setTimeout(()=>say(ctx,egg.say,Math.max(1600,Math.min(2600,egg.say.length*90))),egg.sayDelay||0);
+  if(egg.prop){const d=egg.prop.delay||0;setTimeout(()=>{const pd=runProp(egg.prop,ctx);if(egg.then)setTimeout(()=>egg.then.forEach(m=>runMotion(m,ctx)),Math.min(pd,egg.prop.dur))},d);end=Math.max(end,d+egg.prop.dur+(egg.prop.stay||0)+1200)}
+  else if(egg.then){let t=end;egg.then.forEach(m=>{setTimeout(()=>runMotion(m,ctx),t);t+=motionDur(m)});end=t}
+  return Math.max(end,1800);
+}
+const SECRET={id:'hearts',say:'Mám tě ráda ❤️',fx:{g:['❤️','💛','💚','💙','💜'],n:14},m:['grow','grow']};
+function todaysEgg(){const st=stageIdx();let idx=((dayIndex()%100)+100)%100;let e=EGGS100[idx],guard=0;while(e.min>st&&guard++<100){idx=(idx+37)%100;e=EGGS100[idx]}return e}
 let clicks=0, busy=false;
 function bindCat(wrapId,fxId,bubbleId){
   const wrap=$(wrapId), svg=wrap.querySelector('svg'); if(!svg)return;
@@ -512,10 +589,11 @@ function bindCat(wrapId,fxId,bubbleId){
     svg.classList.remove('idle');
     const ctx={svg,fx:$(fxId),bubble:$(bubbleId)};
     const egg=(clicks%5===0)?SECRET:todaysEgg();
-    egg.run(ctx);
-    setTimeout(()=>{busy=false;svg.classList.add('idle')},2200);
+    const d=runEgg(egg,ctx);
+    setTimeout(()=>{busy=false;svg.classList.add('idle')},Math.min(d,3500));
   });
 }
+window.runEgg=runEgg;window.todaysEgg=todaysEgg;
 
 /* ============ SURPRISES ============ */
 const SURPRISES=[
@@ -559,7 +637,7 @@ function render(){
   const next=REWARDS.find(r=>r.n>k), nextStage=STAGES.find(s=>s.min>k);
   $('catNext').textContent=(next?`Další odměna: ${next.t} za ${next.n-k} ${plural(next.n-k,'den','dny','dní')}.`:'Všechno odemčeno.')+(nextStage?` Za ${nextStage.min-k} ${plural(nextStage.min-k,'den','dny','dní')} z ní bude ${nextStage.name}.`:'');
   bindCat('catToday','fxToday','bubbleToday'); bindCat('catBig','fxBig','bubbleBig');
-  renderCheckin(); renderOffer(); renderRewards(); renderGear(); renderTiles(); drawChart(); renderTable(); whatIf();
+  renderCheckin(); renderOffer(); renderRewards(); renderGear(); renderSchool(); renderTiles(); drawChart(); renderTable(); whatIf();
 }
 
 /* ============ CHECK-IN (YouTube embed + fallback) ============ */
@@ -585,8 +663,8 @@ function renderCheckin(){
   if(beforeStart()){
     el.innerHTML=`<div class="eyebrow">Výzva začíná</div><h2 style="margin-top:6px">${startAt().toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'})}</h2>
     <div class="countdown" id="cd"></div><p class="small" style="margin:0">Zatím se tu můžeš rozkoukat — a klepnout na kočku. Od pondělí ti každé dokoukané priming video přinese <b>${kc(DEP(),0)}</b> plus úrok.</p>
-    ${S.settings.videoUrl?`<p class="small" style="margin:12px 0 0"><b>Chceš si video vyzkoušet už teď?</b> Klidně — vklad se ale počítá až od startu.</p>${levelHtml()}${ytId(S.settings.videoUrl)?`<div class="player"><div id="ytPlayer"></div></div>`:''}`:''}`;
-    bindLevel(); if(ytId(S.settings.videoUrl))mountPlayer(ytId(S.settings.videoUrl),null);
+    ${S.settings.videoUrl?`<p class="small" style="margin:12px 0 0"><b>Chceš si video vyzkoušet už teď?</b> Klidně — vklad se ale počítá až od startu.</p>${levelHtml()}${serverVideo?localPlayerHtml():ytId(S.settings.videoUrl)?`<div class="player"><div id="ytPlayer"></div></div>`:''}`:''}`;
+    bindLevel(); if(serverVideo)mountLocal(null); else if(ytId(S.settings.videoUrl))mountPlayer(ytId(S.settings.videoUrl),null);
     const tick=()=>{const ms=Math.max(0,startAt()-Date.now());const d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60;$('cd').innerHTML=`<div><div class="v num">${d}</div><div class="l">${plural(d,'den','dny','dní')}</div></div><div><div class="v num">${h}</div><div class="l">hodin</div></div><div><div class="v num">${m}</div><div class="l">minut</div></div>`;if(ms<=0){clearInterval(window._cnt);render()}};
     tick(); window._cnt=setInterval(tick,15000); return;
   }
@@ -598,9 +676,9 @@ function renderCheckin(){
   const lvl=S.level==='advanced'?'advanced':'basic', bs=S.settings.basicStart||0;
   el.innerHTML=`<div class="eyebrow">Dnešní check-in</div><h2 style="margin-top:6px">${url?'Pusť si priming. Až dojede, kočka si pro vklad dojde sama.':'Dnes stačí odkliknout — rodič ještě nenastavil video.'}</h2>
   ${url?levelHtml():''}
-  ${id?`<div class="player"><div id="ytPlayer"></div></div>`:''}
-  ${url&&!id?`<a class="btn ghost" href="${esc(url)}" target="_blank" rel="noopener" id="playBtn" data-testid="play-video" style="margin-top:10px">▶ Spustit video</a>`:''}
-  <div id="ytFallback" ${id&&!ytFailed?'hidden':''}>${id?`<p class="small" style="margin:8px 0">Video se tu nechce přehrát? <a href="${esc(lvl==='basic'&&bs?'https://www.youtube.com/watch?v='+id+'&t='+bs+'s':url)}" target="_blank" rel="noopener" id="playBtn2">Otevři ho na YouTube</a> a pak se vrať.</p>`:''}
+  ${serverVideo?localPlayerHtml():id?`<div class="player"><div id="ytPlayer"></div></div>`:''}
+  ${url&&!id&&!serverVideo?`<a class="btn ghost" href="${esc(url)}" target="_blank" rel="noopener" id="playBtn" data-testid="play-video" style="margin-top:10px">▶ Spustit video</a>`:''}
+  <div id="ytFallback" ${(id||serverVideo)&&!ytFailed?'hidden':''}>${id?`<p class="small" style="margin:8px 0">Video se tu nechce přehrát? <a href="${esc(lvl==='basic'&&bs?'https://www.youtube.com/watch?v='+id+'&t='+bs+'s':url)}" target="_blank" rel="noopener" id="playBtn2">Otevři ho na YouTube</a> a pak se vrať.</p>`:''}
     <p class="small" style="margin:8px 0" id="fbNote">${ready?'':`Nouzové tlačítko se odemkne za <b id="cnt">${mmss(left)}</b>.`}</p>
     <button class="btn gold" id="doneBtn" data-testid="checkin-done" ${ready?'':'disabled'}>🪙 Mám hotovo — připsat ${kc(DEP(),0)} + úrok</button>
   </div>`;
@@ -608,7 +686,17 @@ function renderCheckin(){
   ['playBtn','playBtn2'].forEach(i=>{const p=$(i);if(p)p.addEventListener('click',()=>{markVideoStarted(t);setTimeout(renderCheckin,300)})});
   $('doneBtn').addEventListener('click',()=>doCheckin('button'));
   if(!ready&&started){window._cnt=setInterval(()=>{const l=Math.max(0,need-(Date.now()-started));const c=$('cnt');if(c)c.textContent=mmss(l);if(l<=0){clearInterval(window._cnt);renderCheckin()}},1000)}
-  if(id)mountPlayer(id,t);
+  if(serverVideo)mountLocal(t); else if(id)mountPlayer(id,t);
+}
+function localPlayerHtml(){return `<div class="player"><video id="localVideo" data-testid="local-video" controls playsinline preload="metadata" src="${serverVideo}${location.search}"></video></div>`}
+// Self-hosted video: HTML5 <video>; `ended` counts as a finished priming. t = today's date string, null = preview.
+function mountLocal(t){
+  const v=$('localVideo'); if(!v)return;
+  const start=S.level==='advanced'?0:(S.settings.basicStart||0);
+  v.addEventListener('loadedmetadata',()=>{if(start&&v.currentTime<start)v.currentTime=start},{once:true});
+  v.addEventListener('play',()=>{if(!t)return;markVideoStarted(t);const n=$('fbNote');if(n&&!$('cnt'))renderFallbackTimer(t)});
+  v.addEventListener('ended',()=>{if(t&&!S.checkins.some(c=>c.date===todayStr()))doCheckin('video')});
+  v.addEventListener('error',()=>{showFallback()});
 }
 function levelHtml(){const lvl=S.level==='advanced'?'advanced':'basic', bs=S.settings.basicStart||0;
   return `<div class="level" role="tablist"><button data-testid="level-basic" class="${lvl==='basic'?'on':''}" id="lvlBasic">Základní<small>od ${mmss(bs*1000)} do konce</small></button><button data-testid="level-advanced" class="${lvl==='advanced'?'on':''}" id="lvlAdv">Pokročilý<small>celé video</small></button></div>`}
@@ -634,7 +722,7 @@ function doCheckin(source){
   const reward=REWARDS.find(r=>r.n===c.n);
   const stBefore=stageIdx(c.n-1), stAfter=stageIdx(c.n);
   save([{type:'checkin',n:c.n,date:t,source,level:S.level||'basic',deposit:c.deposit,interest:+c.interest.toFixed(2),after:+c.after.toFixed(2)}]);
-  render(); confetti(220); if(ytPlayer&&ytPlayer.stopVideo)try{ytPlayer.stopVideo()}catch(e){}
+  render(); confetti(220); if(ytPlayer&&ytPlayer.stopVideo)try{ytPlayer.stopVideo()}catch(e){} const lv=$('localVideo');if(lv)try{lv.pause()}catch(e){}
   const sk=streak(), sur=surpriseFor(c.n);
   const screens=[];
   screens.push(`<div class="eyebrow">Gratuluju!</div><div class="bigday">${c.n}.</div><h2>Tohle je tvůj ${c.n}. den</h2><p class="small" style="margin:8px 0 0">${sk>1?`${sk} ${plural(sk,'den','dny','dní')} v kuse. `:''}${N()-c.n>0?`Zbývá ${N()-c.n} ${plural(N()-c.n,'den','dny','dní')}.`:'A je to. Sto ze sta.'}</p>`);
@@ -644,14 +732,98 @@ function doCheckin(source){
     ${stAfter>stBefore?`<p style="margin:12px 0 0;font-weight:800">🐾 A z ${STAGES[stBefore].name} je odteď <b>${STAGES[stAfter].name}</b>.</p>`:''}
     ${sur?`<div class="surprise"><div class="em">${sur.em}</div><p><b>${sur.t}</b>${sur.p}</p></div>`:''}`);
   if(reward)screens.push(`<div class="eyebrow">Nová odměna</div><div class="reward-ic">${reward.em}</div><h2>${reward.t}</h2><p class="small" style="margin:8px 0 0">${reward.d}</p>`);
-  runSheets(screens,(i)=>{if(i===1){countUp($('cu'),0,c.interest,900,v=>fmt(v));countUp($('cu2'),before,c.after,1100,v=>fmt(v,0))}if(i===2)confetti(140)},()=>{if(reward&&!S.claimed.includes(reward.id)){S.claimed.push(reward.id);save()}});
-  const cat=$('catToday').querySelector('svg'); if(cat)EGGS.find(e=>e.id==='jump').run({svg:cat,fx:$('fxToday'),bubble:$('bubbleToday')});
+  const lesson=LESSONS[c.n-1]; if(lesson)screens.push(lessonHtml(lesson));
+  const lessonIdx=screens.length-1;
+  runSheets(screens,(i)=>{if(i===1){countUp($('cu'),0,c.interest,900,v=>fmt(v));countUp($('cu2'),before,c.after,1100,v=>fmt(v,0))}if(reward&&i===2)confetti(140);if(lesson&&i===lessonIdx)bindLesson(lesson)},()=>{if(reward&&!S.claimed.includes(reward.id)){S.claimed.push(reward.id)}if(lesson)markRead(lesson.n);save();renderSchool()});
+  const cat=$('catToday').querySelector('svg'); if(cat)runEgg(EGGS100[2],{svg:cat,fx:$('fxToday'),bubble:$('bubbleToday')});
 }
 function runSheets(list,onShow,onDone){
-  let i=0; const show=()=>{const last=i===list.length-1;openSheet(`<div class="center">${list[i]}<button class="btn primary" style="margin-top:18px" id="sheetNext" data-testid="sheet-next">${last?'Super':'Dál →'}</button></div>`,()=>{$('sheet').classList.add('center');onShow&&onShow(i);$('sheetNext').onclick=()=>{i++;if(i<list.length)show();else{closeSheet();onDone&&onDone()}}})};
+  let i=0; const show=()=>{const last=i===list.length-1;openSheet(`<div class="center">${list[i]}<button class="btn primary" style="margin-top:14px" id="sheetNext" data-testid="sheet-next">${last?'Super, díky':'Dál →'}</button></div>`,()=>{$('sheet').classList.add('center');onShow&&onShow(i);$('sheetNext').onclick=()=>{i++;if(i<list.length)show();else{closeSheet();onDone&&onDone()}}})};
   show();
 }
 function countUp(el,a,b,ms,f){if(!el)return;const t0=performance.now();(function step(t){const p=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-p,3);el.textContent=f(a+(b-a)*e);if(p<1)requestAnimationFrame(step)})(t0)}
+
+/* ============ MINCINA ŠKOLA — myšlenky, kvízy, hvězdičky ============ */
+const TITLES=[[0,'Kotě-žák'],[10,'Učeň'],[30,'Šetřílek'],[60,'Investorka'],[100,'Mistryně mincí'],[140,'Lvice financí']];
+function stars(){const sc=S.school;const ok=Object.values(sc.quiz).filter(q=>q.ok).length;return sc.read.length+ok*2+Math.min(sc.asked,30)}
+function schoolTitle(){let t=TITLES[0];TITLES.forEach(x=>{if(stars()>=x[0])t=x});return t}
+function nextTitle(){return TITLES.find(x=>x[0]>stars())}
+function chapterOf(n){return CHAPTERS.filter(c=>c.from<=n).pop()}
+function lessonUnlocked(n){return S.checkins.length>=n}
+function markRead(n){if(!S.school.read.includes(n)){S.school.read.push(n);save([{type:'lesson-read',n}])}}
+function lessonHtml(l,opts={}){
+  const ch=chapterOf(l.n), prev=LESSONS[l.n-2], next=LESSONS[l.n], q=l.quiz, done=S.school.quiz[l.n];
+  const isNew=!S.school.read.includes(l.n);
+  return `<div class="lesson" data-testid="lesson" data-n="${l.n}">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="eyebrow">Mincina myšlenka · ${l.n}</span><span class="chapter">Kapitola ${ch.n} · ${ch.name}</span></div>
+    <div class="tut-cat" style="margin-top:8px">${catSVG().replace('class="cat idle"','class="cat idle" style="width:96px"')}</div>
+    <h2>${l.t}</h2>
+    <p class="lesson-p">${l.p}</p>
+    ${q?`<div class="quiz" data-testid="quiz"><div style="font-weight:800;font-size:15px;text-align:left;margin-top:4px">🧠 ${q.q}</div>${q.opts.map((o,i)=>`<button data-pick="${i}" ${done?'disabled':''} class="${done?(i===q.a?'ok':(done.pick===i?'bad':'')):''}">${'ABC'[i]} · ${o}${done&&i===q.a?'<span>✓</span>':''}</button>`).join('')}</div>${done?`<div class="why ${done.ok?'':'bad'}"><b>${done.ok?'Přesně!':'Skoro.'}</b> ${q.why}</div>`:'<div id="why"></div>'}`:''}
+    <div class="lesson-nav"><div><span class="eyebrow">Včera</span><b>${prev?prev.t:'—'}</b></div><div><span class="eyebrow">Zítra</span><b style="${lessonUnlocked(l.n+1)?'':'color:var(--muted)'}">${next?(lessonUnlocked(l.n+1)?next.t:'🔒 po dalším videu'):'konec školy 🎓'}</b></div></div>
+    <div class="stars"><span>⭐ ${isNew?'+1 hvězdička za přečtení':'už přečteno'}${q&&!done?' · +2 za kvíz':''}</span><span class="small">celkem ${stars()} · ${schoolTitle()[1]}</span></div>
+    <button class="btn ghost" style="margin-top:12px" data-ask="${l.n}" data-testid="lesson-ask">💬 Zeptat se Mince</button>
+  </div>`;
+}
+function bindLesson(l){
+  const root=document.querySelector('.lesson[data-n="'+l.n+'"]'); if(!root)return;
+  root.querySelectorAll('[data-pick]').forEach(b=>b.addEventListener('click',()=>{
+    if(S.school.quiz[l.n])return; const pick=+b.dataset.pick, ok=pick===l.quiz.a;
+    S.school.quiz[l.n]={pick,ok}; save([{type:'quiz',n:l.n,pick,ok}]);
+    root.querySelectorAll('[data-pick]').forEach(x=>{x.disabled=true;const i=+x.dataset.pick;if(i===l.quiz.a){x.classList.add('ok');x.insertAdjacentHTML('beforeend','<span>✓</span>')}else if(i===pick)x.classList.add('bad')});
+    const w=root.querySelector('#why');if(w){w.className='why'+(ok?'':' bad');w.innerHTML=`<b>${ok?'Přesně!':'Skoro.'}</b> ${l.quiz.why}`}
+    if(ok)confetti(90); const st=root.querySelector('.stars .small');if(st)st.textContent=`celkem ${stars()} · ${schoolTitle()[1]}`; const s1=root.querySelector('.stars span');if(s1)s1.textContent=ok?'⭐ +2 za správný kvíz':'⭐ za kvíz nic — příště';
+  }));
+  const a=root.querySelector('[data-ask]');if(a)a.addEventListener('click',()=>openChat(l));
+}
+function openLesson(l){openSheet(`<div class="center">${lessonHtml(l)}<button class="btn primary" style="margin-top:14px" id="lessonClose">Super, díky</button></div>`,()=>{$('sheet').classList.add('center');bindLesson(l);$('lessonClose').onclick=()=>{markRead(l.n);closeSheet();renderSchool()}})}
+function renderSchool(){
+  const k=S.checkins.length, t=schoolTitle(), nt=nextTitle(), st=stars();
+  $('schoolHead').innerHTML=`${catSVG().replace(/style="width:[^"]*"/,'style="width:96px"')}<div style="flex:1;min-width:0"><div class="eyebrow">Mincina škola</div><h2>${t[1]}</h2><div class="small">${st} ⭐${nt?` · do titulu ${nt[1]} zbývá ${nt[0]-st}`:' · nejvyšší titul'}</div><div class="progress" style="margin:8px 0 0"><i style="width:${nt?Math.round((st-t[0])/(nt[0]-t[0])*100):100}%"></i></div></div>`;
+  const okq=Object.values(S.school.quiz).filter(q=>q.ok).length, nq=Object.keys(S.school.quiz).length;
+  $('schoolTiles').innerHTML=`<div class="tile"><div class="v num">${S.school.read.length}</div><div class="l">myšlenek</div></div><div class="tile"><div class="v num">${okq}/${nq}</div><div class="l">kvízů správně</div></div><div class="tile"><div class="v num">${S.school.asked}</div><div class="l">otázek</div></div>`;
+  $('chapters').innerHTML=CHAPTERS.map(c=>{const to=c.from+9, got=LESSONS.filter(l=>l.n>=c.from&&l.n<=to&&lessonUnlocked(l.n)).length, state=got>=10?'done':got>0?'now':'lock';
+    return `<div><div class="chap ${state}" data-ch="${c.n}" data-testid="chapter-${c.n}"><div class="n">${state==='done'?'✓':c.n}</div><div style="flex:1"><b>${c.name}</b><span>${state==='lock'?'odemkne se dnem '+c.from:got+' / 10 myšlenek'}</span></div>${state==='now'?'<span class="chapter" style="border-color:var(--gold);color:var(--gold)">teď</span>':''}</div><div class="lessonlist" id="ch${c.n}" hidden>${LESSONS.filter(l=>l.n>=c.from&&l.n<=to&&lessonUnlocked(l.n)).map(l=>`<button data-open="${l.n}"><small>${l.n}</small>${l.t}${S.school.read.includes(l.n)?'':' <span class="chapter" style="margin-left:auto">nové</span>'}${l.quiz?(S.school.quiz[l.n]?(S.school.quiz[l.n].ok?' ✓':' ✗'):' 🧠'):''}</button>`).join('')}</div></div>`}).join('');
+  $('chapters').querySelectorAll('.chap:not(.lock)').forEach(e=>e.addEventListener('click',()=>{const l=$('ch'+e.dataset.ch);l.hidden=!l.hidden}));
+  $('chapters').querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openLesson(LESSONS[+b.dataset.open-1])));
+}
+$('askOpenBtn').addEventListener('click',()=>openChat(LESSONS[Math.max(0,Math.min(S.checkins.length,LESSONS.length)-1)]||null));
+
+/* ============ ZEPTEJ SE MINCE — chat přes /api/ask ============ */
+let chat={history:[],lesson:null};
+async function openChat(lesson){
+  chat={history:[],lesson};
+  openSheet(`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>💬 Zeptej se Mince</h2><span class="chapter" id="askQuota">…</span></div>
+    <p class="small" style="margin:4px 0 0">${lesson?`K dnešní myšlence „${lesson.t}“ — nebo na cokoli jiného o penězích.`:'Na cokoli o penězích, spoření, úrocích nebo podvodech.'}</p>
+    <div class="chat" id="chatLog" data-testid="chat"></div>
+    <div class="chips" id="chips"></div>
+    <div class="askrow"><input id="askIn" data-testid="ask-input" placeholder="Napiš otázku…" maxlength="400" autocomplete="off"><button id="askSend" data-testid="ask-send">➤</button></div>
+    <button class="btn ghost" style="margin-top:10px" onclick="closeSheet()">Zavřít</button>`,async()=>{
+    renderChips(lesson?lesson.ask:['Co je úrok z úroku?','Jak si udělat rozpočet?','Jak poznám podvod?']);
+    $('askSend').onclick=()=>sendAsk($('askIn').value);
+    $('askIn').addEventListener('keydown',e=>{if(e.key==='Enter')sendAsk($('askIn').value)});
+    try{const r=await fetch(api('ask/status'),{cache:'no-store'});const j=await r.json();$('askQuota').textContent=`dnes ${j.askedToday} z ${j.limit}`;
+      if(!j.alive){$('chatLog').innerHTML=`<div class="msg cat">Zzz… zrovna spím a nemůžu odpovídat. Zkus to za chvíli — nebo se zeptej táty. 😴</div>`;$('askIn').disabled=true;$('askSend').disabled=true}
+    }catch(e){$('askQuota').textContent='offline'}
+  });
+}
+function renderChips(list){$('chips').innerHTML=(list||[]).map(q=>`<button data-q="${esc(q)}">${esc(q)}</button>`).join('');$('chips').querySelectorAll('button').forEach(b=>b.onclick=()=>sendAsk(b.dataset.q))}
+async function sendAsk(q){
+  q=(q||'').trim(); if(!q)return; const log=$('chatLog'), inp=$('askIn'), btn=$('askSend'); if(btn.disabled)return;
+  inp.value=''; btn.disabled=true; inp.disabled=true; $('chips').innerHTML='';
+  log.insertAdjacentHTML('beforeend',`<div class="msg me">${esc(q)}</div><div class="thinking" id="thinking"><i></i><i></i><i></i> Mince přemýšlí…</div>`); log.scrollTop=log.scrollHeight;
+  try{
+    const body={question:q,history:chat.history.slice(-3),kid:S.settings.kidName||'Terez',cat:S.settings.catName};
+    if(chat.lesson){body.lessonN=chat.lesson.n;body.lessonTitle=chat.lesson.t;body.lessonText=chat.lesson.p}
+    const r=await fetch(api('ask'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+    const j=await r.json(); $('thinking')?.remove();
+    if(!r.ok)throw new Error(j.detail||('HTTP '+r.status));
+    chat.history.push({q,a:j.answer}); S.school.asked++; save([{type:'ask',n:chat.lesson?chat.lesson.n:null,q}]);
+    log.insertAdjacentHTML('beforeend',`<div class="msg cat">${esc(j.answer).replace(/\n/g,'<br>')}</div>`); renderChips(j.followups);
+    $('askQuota').textContent=`dnes ${j.askedToday} z ${j.limit}`;
+  }catch(e){$('thinking')?.remove();log.insertAdjacentHTML('beforeend',`<div class="msg cat">Hmm, teď to nešlo: ${esc(e.message)}</div>`)}
+  btn.disabled=false; inp.disabled=false; log.scrollTop=log.scrollHeight; inp.focus();
+}
 
 /* ============ OFFER ============ */
 function activeOffer(){const k=S.checkins.length;const d=S.settings.offerDays.find(x=>x===k);return (d&&!S.offers[d])?d:null}
@@ -665,9 +837,18 @@ function renderOffer(){
     <div class="take"><div class="l">vezmu si to teď</div><div class="v num">${kc(take,0)}</div><div class="bar"><i style="width:${take/keep*100}%;background:var(--coral)"></i></div><div class="l" style="margin-top:6px">${kc(now,0)} dnes + ${kc(take-now,0)} později</div></div>
     <div class="keep"><div class="l">nechám to pracovat</div><div class="v num">${kc(keep,0)}</div><div class="bar"><i style="width:100%;background:var(--mint)"></i></div><div class="l" style="margin-top:6px">všechno na dni 100</div></div>
   </div>
-  <p style="margin:0 0 14px;font-weight:800">Cena za „hned“: <span style="color:var(--coral)">${kc(lost,0)}</span>, které by ti jinak vydělaly úroky.</p>
+  <p style="margin:0;font-weight:800">Cena za „hned“: <span style="color:var(--coral)">${kc(lost,0)}</span>, které by ti jinak vydělaly úroky.</p>
+  <div class="faq" data-testid="offer-faq">
+    <details><summary>Co se stane, když teď vyberu?</summary><p>Táta ti dnes dá <b>${kc(now,0)}</b> v hotovosti. Zůstatek spadne na 0 a od zítřka se vklady ${kc(DEP(),0)} i úroky počítají znovu od nuly. Do dne 100 se z nových vkladů dostaneš na ~${kc(take-now,0)} — celkem ${kc(take,0)}. Křivka začne znovu tou nudnou plochou částí.</p></details>
+    <details><summary>Co se stane, když nevyberu?</summary><p>Nic viditelného — a přesně to je ten trik. Těch ${kc(now,0)} pracuje dál a za ${left} ${plural(left,'den','dny','dní')} z nich samotných bude <b>${kc(now*Math.pow(1+R(),left),0)}</b>. Peníze nikam neodejdou, jsou pořád tvoje, jen je ještě nedržíš v ruce.</p></details>
+    <details><summary>Proč je rozdíl tak velký?</summary><p>Protože úrok se počítá i z úroků. ${kc(now,0)} dnes je základ, na kterém stojí každý další den — když ho vyndáš, dalších ${left} dní staví na nule. Ztratíš ${fmt(lost/keep*100,0)} % konečné částky, i když si vezmeš jen ${fmt(now/keep*100,0)} % z ní.</p></details>
+    <details><summary>Jak to funguje v reálném světě?</summary><p>Přesně takhle: lidé vybírají investice, když trh spadne, nebo ruší spoření kvůli dovolené — a přijdou o roky úroků, ne jen o vybranou částku. Kdo nechá peníze pracovat (penzijní spoření, dlouhodobé investice), vyhrává ne chytrostí, ale tím, že nesáhl.</p></details>
+    <details><summary>Kdy je správné peníze vybrat?</summary><p>Když je opravdu potřebuješ: rozbitý telefon, nutný výdaj, žádná jiná rezerva. Ne proto, že je to lákavé. Tahle nabídka je trénink — žádná odpověď není špatná, jen má každá jinou cenu. A tu teď znáš přesně.</p></details>
+  </div>
+  <button class="btn ghost" id="offerAsk" data-testid="offer-ask" style="margin-bottom:10px">💬 Mám jinou otázku</button>
   <div class="row"><button class="btn coral" id="takeBtn" data-testid="offer-take">Vzít ${kc(now,0)}</button><button class="btn primary" id="keepBtn" data-testid="offer-keep">Nechám je růst</button></div>
   <p class="small" style="margin:10px 0 0">Nabídka platí do dalšího check-inu.</p></div>`;
+  $('offerAsk').onclick=()=>openChat({n:S.checkins.length,t:'Nabídka výběru na dni '+d,p:`Terez dnes může vybrat ${kc(now,0)}; když nevybere, bude mít na dni 100 ${kc(keep,0)}, když vybere, celkem ${kc(take,0)}.`,ask:['Co bys udělala ty?','Kdy je správné vybrat?']});
   $('keepBtn').onclick=()=>{S.offers[d]='kept';save([{type:'offer',day:d,decision:'kept',balance:+now.toFixed(2)}]);render();confetti(120);openSheet(`<h2>😼 Odolala jsi.</h2><p class="small" style="margin:8px 0 0">Tohle je přesně ten moment, kde většina lidí prohraje. Kočka je na tebe hrdá — a tvoje ${kc(now,0)} teď pracují dál.</p><button class="btn primary" style="margin-top:16px" onclick="closeSheet()">Jedeme dál</button>`)};
   $('takeBtn').onclick=()=>openSheet(`<h2>Opravdu vybrat ${kc(now,0)}?</h2><p class="small" style="margin:8px 0 0">Peníze ti dá táta dnes. Počítadlo úroků se vrátí na nulu a na dni 100 budeš mít asi o <b style="color:var(--coral)">${kc(lost,0)}</b> míň. Rozhodnutí nejde vrátit.</p><div class="row" style="margin-top:16px"><button class="btn ghost" onclick="closeSheet()">Ještě ne</button><button class="btn coral" id="takeConfirm" data-testid="offer-take-confirm">Ano, vybrat</button></div>`,()=>{$('takeConfirm').onclick=()=>{S.withdrawals.push({afterN:d,date:todayStr(),amount:now});S.offers[d]='taken';recompute();save([{type:'withdrawal',day:d,amount:+now.toFixed(2)}]);closeSheet();render();toast(`Vybráno ${kc(now,0)} — řekni tátovi.`)}});
 }

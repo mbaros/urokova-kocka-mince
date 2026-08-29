@@ -27,6 +27,8 @@ graph TB
 | Backend | `server/main.py` | statika + `GET/PUT /api/state`, `GET /api/events`, `GET /api/health`; atomický zápis stavu, append-only event log |
 | Reverse proxy | `deploy/Caddyfile.snippet` (v `/home/bobek/jarabot-metrics/Caddyfile`) | tajná cesta + token → 404 bez tokenu; `uri strip_prefix` |
 | Container | `deploy/Dockerfile`, `deploy/docker-compose.yml` | `python:3.12-slim`, non-root uid 1000, read-only FS, `./data` bind mount, síť `jarabot-metrics_default` |
+| Ask worker | `scripts/ask-worker.py`, `deploy/kocka-ask-worker.service` | na hostu (bobek), sleduje `data/ask/`, volá `claude -p` (Max), zapisuje odpovědi, heartbeat |
+| Lekce | `app/lessons.js` | 100 myšlenek + 20 kvízů + navrhované otázky, 10 kapitol |
 | Testy | `bin/e2e-smoke`, `tests/` | API contract (curl), `node --check` inline JS, Playwright mobile Chromium |
 
 ## Data flow
@@ -53,6 +55,8 @@ graph TB
 | GET | `/api/state` | `{state, updatedAt}`; 404 pokud nic není uloženo |
 | PUT | `/api/state` | body `{state, events:[{type,payload}]}` → atomický zápis `state.json`, append do `events.jsonl`; 413 nad 512 kB; 422 při špatném tvaru |
 | GET | `/api/events?limit=200` | poslední eventy z logu |
+| GET | `/api/ask/status` | `{alive, askedToday, limit, mock}` — `alive` = heartbeat workeru < 120 s |
+| POST | `/api/ask` | `{question, lessonN?, lessonTitle?, lessonText?, history[≤6], kid, cat}` → `{answer, followups[≤3], askedToday, limit}`; 429 limit, 503 worker spí, 504 timeout |
 | GET | `/` | `app/index.html` (`Cache-Control: no-cache`) |
 
 ## Stav (state.json)
@@ -64,17 +68,18 @@ graph TB
   "withdrawals": [{"afterN":33,"date":"…","amount":907.68}],
   "offers": {"33":"kept"},
   "claimed": ["r1"],
+  "school": {"read":[1,2],"quiz":{"5":{"pick":2,"ok":true}},"asked":3},
   "videoStartedAt": null, "videoStartedFor": null, "level": "basic", "tutorialDone": false
 }
 ```
 
-Eventy (`events.jsonl`, jeden JSON na řádek): `checkin`, `offer`, `withdrawal`, `settings`, `test-day`, `undo-day`, `restore`, `reset`.
+Eventy (`events.jsonl`, jeden JSON na řádek): `checkin`, `offer`, `withdrawal`, `settings`, `test-day`, `undo-day`, `restore`, `reset`, `tutorial`, `lesson-read`, `quiz`, `ask`. Otázky a odpovědi navíc v `data/ask/log.jsonl`.
 
 ## Kočka
 
 - Stupně podle počtu check-inů: kotě (0) → kočka (10) → velká kočka (25) → mini puma (45) → malá lvice (65) → lvice (85). Mění se měřítko, barva srsti, tvar uší, čumák, střapec na ocase.
 - Výbava (gear) z odměn: obojek, korunka, brýle, šátek, plášť, svaly, křídla, zlatý obojek, trofej (aura). Hračky se zobrazují kolem kočky, kulisa mění pozadí, titul je odznak u jména.
-- Easter eggy: `EGGS[]` s `min` stupněm; denní výběr `todaysEgg()` je deterministický z (dny od startu + stupeň). Každý 5. klik = tajná „Mám tě ráda“. Animace přes Web Animations API na skupinách `.head .eyes .tail .pawR .arms .body`.
+- Easter eggy: `app/eggs.js` — `MOTIONS` (Web Animations API na skupinách `.head .eyes .eyeR .tail .pawL .pawR .arms .body` nebo celém SVG) a `EGGS100[]` (den i výzvy → egg i; `min` = potřebný stupeň, jinak se skočí o 37 dál). Egg = pohyby + částice + letící prop (emoji po dráze) + návazné pohyby + bublina. Každý 5. klik = tajná „Mám tě ráda“.
 
 ## Externí závislosti
 

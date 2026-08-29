@@ -56,3 +56,18 @@ Kompletní přepis `app/index.html` (server sync, YouTube embed, oslava, odměny
 **Tests added/modified:** level toggle scénář
 
 ---
+
+## Prompt #7 — 2026-08-29 09:40
+
+**User prompt:**
+> Když budou ty milníky, kde můžu vybrat peníze, nadesignuj více info, např. FAQ „Co se stane, když teď vyberu / nevyberu“ — ať je to co nejlepší pro finanční gramotnost. Každý den dej 1 lekci z finanční gramotnosti, nenuceně jako myšlenku kočky po primingu. Ať na sebe navazují, občas kvíz a možnost se na něco zeptat; když se zeptá, použij lokální model (paušál Max), vygeneruj odpověď a navrhuj navazující dotazy dynamicky. Celé to nadesignuj jako hru, nakresli v Claude Design, pak implementuj.
+
+**Plan:** design canvas (5 obrazovek) → 100 lekcí + 20 kvízů → Škola, hvězdičky, tituly → chat přes `/api/ask` + host worker (Claude Code, Max) → FAQ u nabídek → testy → docs → deploy.
+
+**Summary of what was done:** Vše výše; worker vyžaduje jednorázové `claude setup-token` na martin1 (token OAuth expiroval).
+
+**Files changed:** `app/index.html`, `app/lessons.js`, `server/main.py`, `scripts/ask-worker.py`, `deploy/kocka-ask-worker.service`, `bin/e2e-smoke`, `tests/e2e/smoke.spec.js`, `CLAUDE.md`, `docs/*`
+
+**Tests added/modified:** API ask mock + 422; Playwright: lekce v oslavě, kvíz den 5, Škola + chat, FAQ nabídky
+
+---

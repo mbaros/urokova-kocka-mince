@@ -1,5 +1,36 @@
 # Changelog
 
+## [2026-08-29] Prompt #9 — 100 easter eggů
+
+### Added
+- `app/eggs.js`: 55 pohybových primitiv (`MOTIONS`) + dráhy propů a **100 pojmenovaných easter eggů**, jeden na každý den výzvy (den 1 mrknutí … den 100 „Sto dní. Děkuju, Terez.“), řazené podle vývoje kočky (lví triky až od dne 81). Interpret `runEgg` v `index.html` (pohyby, částice, letící emoji, návazné pohyby, otřes). Když dcera vynechá dny a kočka na trik ještě nemá stupeň, vybere se jiný z povolených.
+
+---
+
+## [2026-08-29] Prompt #8 — video bez YouTube
+
+### Fixed
+- YouTube embed končil chybou 153 (chybí Referer): vhost má `Referrer-Policy no-referrer`; route aplikace teď posílá `strict-origin-when-cross-origin` (jen origin, nikdy tajná cesta ani token).
+
+### Added
+- **Vlastní kopie videa**: `deploy/fetch-video.sh <url>` stáhne přes yt-dlp do `data/video/priming.mp4`; server ji servíruje jako `media/priming.mp4` (Range → posouvání funguje) a hlásí ji v `/api/health.video`. Aplikace ji upřednostní před YouTube: HTML5 `<video>`, `ended` = check-in, základní level skočí na 2:30.
+
+---
+
+## [2026-08-29] Prompt #7 — Mincina škola
+
+### Added
+- **100 navazujících myšlenek o penězích** (`app/lessons.js`), 10 kapitol po 10 dnech, hlas kočky; kvíz každý 5. den (3 možnosti + vysvětlení). Myšlenka n se odemkne n-tým check-inem a je 4. obrazovkou oslavy.
+- **Záložka Škola**: titul podle hvězdiček (přečtení +1, správný kvíz +2, otázka +1), kapitoly jako mapa, znovuotevření starších myšlenek.
+- **„Zeptej se Mince“**: chat s navrhovanými otázkami, odpověď + 3 dynamické navazující otázky. `POST /api/ask` → souborová IPC (`data/ask/req-*.json`) → host worker `scripts/ask-worker.py` (Claude Code v print módu, Max předplatné) → `res-*.json`. Denní limit 25, heartbeat (`/api/ask/status`), mock režim `ASK_MOCK=1` pro testy. Systemd user unit `deploy/kocka-ask-worker.service`.
+- **FAQ u nabídek výběru** (den 33/66): „Co se stane, když teď vyberu / nevyberu“, proč je rozdíl tak velký, reálný svět, kdy je správné vybrat — s konkrétními čísly; tlačítko „Mám jinou otázku“ otevře chat s kontextem nabídky.
+- Flush rozpracovaného uložení přes `sendBeacon` při zavření karty.
+
+### Tests
+- API: `/api/ask` mock tvar + 422; Playwright: 4. obrazovka oslavy, kvíz den 5, Škola + chat (mock), FAQ nabídky — 14/14 zelené
+
+---
+
 ## [2026-08-29] Prompt #6 — úvodní návod
 
 ### Added

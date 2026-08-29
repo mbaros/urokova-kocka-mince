@@ -19,6 +19,7 @@
 
 | Soubor | Účel |
 |---|---|
+| `app/eggs.js` | 100 easter eggů + pohybová primitiva |
 | `app/index.html` | celá aplikace: styly, UI, logika úročení, kočka (SVG + easter eggy), YouTube embed, sync se serverem |
 | `server/main.py` | `GET/PUT /api/state`, `GET /api/events`, `GET /api/health`, statika |
 | `deploy/docker-compose.yml`, `deploy/Dockerfile` | container `kocka` |
@@ -45,6 +46,26 @@ DATA_DIR=./data uvicorn server.main:app --reload --port 8765   # http://127.0.0.
 bin/e2e-smoke                                                  # spustí si vlastní server na 8765
 ```
 
+## „Zeptej se Mince“ (ask worker na hostu)
+
+Odpovědi generuje Claude Code přes Max předplatné, mimo container:
+
+```bash
+# jednorázově na martin1 jako bobek:
+claude setup-token                      # vytvoří dlouhodobý token (sk-ant-oat-…) — přihlášení v prohlížeči
+echo 'CLAUDE_CODE_OAUTH_TOKEN=sk-ant-oat-…' >> ~/projects/urokova-kocka-mince/.env   # gitignored
+mkdir -p ~/.config/systemd/user && cp deploy/kocka-ask-worker.service ~/.config/systemd/user/
+systemctl --user daemon-reload && systemctl --user enable --now kocka-ask-worker
+sudo loginctl enable-linger bobek
+journalctl --user -u kocka-ask-worker -f
+```
+
+Bez běžícího workeru UI hlásí „Mince spí“ (heartbeat starší než 2 min); lekce, kvízy i FAQ fungují dál.
+
+## Video
+
+Nejspolehlivější je vlastní kopie: `ssh martin1 ~/projects/urokova-kocka-mince/deploy/fetch-video.sh <youtube-url>` → `data/video/priming.mp4`. Aplikace ji použije automaticky (health `video`), YouTube je jen záloha. YouTube embed vyžaduje Referer — route v Caddy proto přepisuje `Referrer-Policy`.
+
 ## Deploy
 
 ```bash
@@ -63,6 +84,8 @@ ssh martin1 ~/projects/urokova-kocka-mince/deploy/deploy.sh
 - Google Fonts a YouTube jsou externí; testy je blokují (`page.route`), e2e nesmí na síti záviset.
 - Playwright bez staženého Chromia: `PW_CHROMIUM_PATH=/cesta/k/chrome bin/e2e-smoke`.
 - Výchozí PIN rodiče je `1234` — změnit v nastavení hned po nasazení.
+- `bin/e2e-smoke` startuje server s `ASK_MOCK=1`; chat v testech dostává zkušební odpověď, worker není potřeba.
+- Lekce v `app/lessons.js` jsou číslované 1–100 a testy počítají s konkrétními tituly (1 „Co jsou vlastně peníze“, 7 „Kam mizí drobné“, kvíz 5 odpověď C).
 
 ## Interní cesty / endpointy
 

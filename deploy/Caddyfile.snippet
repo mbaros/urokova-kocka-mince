@@ -16,6 +16,9 @@ handle /k/{{SECRET_PATH}}/* {
 	@authorized query k={{ACCESS_TOKEN}}
 	handle @authorized {
 		header Cache-Control "no-store"
+		# The vhost sets no-referrer; YouTube's embed then fails with error 153.
+		# strict-origin-when-cross-origin sends only the origin (never the secret path/token).
+		header Referrer-Policy "strict-origin-when-cross-origin"
 		uri strip_prefix /k/{{SECRET_PATH}}
 		reverse_proxy kocka:8000
 	}

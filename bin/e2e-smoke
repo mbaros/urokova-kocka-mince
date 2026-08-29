@@ -26,7 +26,8 @@ step() { printf "%s── %s%s\n" "$ANSI_DIM" "$1" "$ANSI_RESET"; }
 # ─── 0. local server (app + API) with a throw-away data dir ───
 step "0. Local server"
 TMPDATA=$(mktemp -d)
-DATA_DIR="$TMPDATA" python3 -m uvicorn server.main:app --host 127.0.0.1 --port "$PORT" --log-level warning >/tmp/_kocka_uvicorn.log 2>&1 &
+mkdir -p "$TMPDATA/video" && printf "x" > "$TMPDATA/video/priming.mp4"   # presence is enough for the UI test
+ASK_MOCK=1 DATA_DIR="$TMPDATA" python3 -m uvicorn server.main:app --host 127.0.0.1 --port "$PORT" --log-level warning >/tmp/_kocka_uvicorn.log 2>&1 &
 SERVER_PID=$!
 for _ in $(seq 1 20); do curl -s -o /dev/null "$LOCAL/" && break; sleep 0.2; done
 curl -s -o /dev/null "$LOCAL/" && ok "server on $LOCAL" || bad "server did not start" "$(tail -5 /tmp/_kocka_uvicorn.log)"
@@ -40,6 +41,9 @@ code=$(curl -sL -o /dev/null -w '%{http_code}' "$BASE")
 step "1b. API contract"
 h=$(curl -s "$LOCAL/api/health")
 echo "$h" | grep -q '"ok":true' && ok "GET /api/health ok:true" || bad "GET /api/health" "$h"
+echo "$h" | grep -q '"video":"media/priming.mp4"' && ok "health reports the self-hosted video" || bad "health video field" "$h"
+code=$(curl -s -o /dev/null -w '%{http_code}' -H 'Range: bytes=0-0' "$LOCAL/media/priming.mp4")
+[ "$code" = "206" ] && ok "GET /media/priming.mp4 with Range → 206" || bad "media Range expected 206 got $code"
 code=$(curl -s -o /dev/null -w '%{http_code}' "$LOCAL/api/state")
 [ "$code" = "404" ] && ok "GET /api/state on empty store → 404" || bad "GET /api/state expected 404 got $code"
 code=$(curl -s -o /dev/null -w '%{http_code}' -X PUT "$LOCAL/api/state" -H 'content-type: application/json' -d '{"state":{"checkins":[]},"events":[{"type":"e2e","payload":{"x":1}}]}')
@@ -49,6 +53,10 @@ keys=$(curl -s "$LOCAL/api/state" | python3 -c 'import sys,json;print(",".join(s
 [ -f "$TMPDATA/events.jsonl" ] && grep -q '"type": "e2e"' "$TMPDATA/events.jsonl" && ok "events appended to events.jsonl" || bad "events.jsonl missing the event"
 code=$(curl -s -o /dev/null -w '%{http_code}' -X PUT "$LOCAL/api/state" -H 'content-type: application/json' -d '{"nope":1}')
 [ "$code" = "422" ] && ok "PUT invalid body → 422" || bad "PUT invalid body expected 422 got $code"
+ask=$(curl -s -X POST "$LOCAL/api/ask" -H 'content-type: application/json' -d '{"question":"Co je inflace?","lessonN":17}')
+echo "$ask" | python3 -c 'import sys,json;d=json.load(sys.stdin);assert d["answer"] and len(d["followups"])==3' 2>/dev/null && ok "POST /api/ask (mock) → answer + 3 followups" || bad "POST /api/ask shape" "$ask"
+code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$LOCAL/api/ask" -H 'content-type: application/json' -d '{"question":""}')
+[ "$code" = "422" ] && ok "POST /api/ask empty → 422" || bad "POST /api/ask empty expected 422 got $code"
 
 # ─── 2. HTML render + JS syntax ───────────────────────────
 step "2. HTML render + JS syntax"
