@@ -104,6 +104,10 @@ h3{font-size:17px}
 .step.done .n{background:var(--mint-soft);color:var(--mint)}
 .step p{margin:0 0 8px;font-size:14px;color:var(--ink2)}
 .small{font-size:13px;color:var(--muted)}
+.level{display:flex;gap:6px;background:var(--surface2);border-radius:14px;padding:4px;margin:10px 0 4px}
+.level button{flex:1;padding:10px 8px;border-radius:11px;font-weight:800;font-size:13px;color:var(--muted)}
+.level button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.level button small{display:block;font-weight:700;font-size:11px;opacity:.75}
 .player{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000;margin:6px 0 10px}
 .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .countdown{display:flex;gap:8px;justify-content:center;margin:12px 0}
@@ -228,7 +232,7 @@ details summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--muted)
 
     <div class="card flat">
       <h3>Jak to funguje</h3>
-      <p class="small" style="margin:6px 0 0">Každý den, kdy si pustíš priming video a dokoukáš ho tady, ti přibude vklad <b id="ruleDep">16 Kč</b> a k celému zůstatku se připíše <b id="ruleRate">3 %</b> úrok. Úrok se počítá i z úroků — proto křivka na konci letí nahoru. Po 100 dnech je celý zůstatek tvůj.</p>
+      <p class="small" style="margin:6px 0 0">Každý den, kdy si pustíš priming video a dokoukáš ho tady (základní level od <b id="ruleBasic">2:30</b>, pokročilý celé video), ti přibude vklad <b id="ruleDep">16 Kč</b> a k celému zůstatku se připíše <b id="ruleRate">3 %</b> úrok. Úrok se počítá i z úroků — proto křivka na konci letí nahoru. Po 100 dnech je celý zůstatek tvůj.</p>
     </div>
   </section>
 
@@ -297,13 +301,14 @@ details summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--muted)
 /* ============ STATE ============ */
 const KEY='urokova-kocka-v1';
 const DEFAULTS={
-  settings:{rate:0.03,target:10000,days:100,deposit:16,videoUrl:'',minMinutes:5,pin:'1234',catName:'Mince',offerDays:[33,66],startDate:'2026-08-31'},
+  settings:{rate:0.03,target:10000,days:100,deposit:16,videoUrl:'',minMinutes:5,pin:'1234',catName:'Mince',offerDays:[33,66],startDate:'2026-08-31',basicStart:150},
   checkins:[],          // {date, n, deposit, interest, before, after}
   withdrawals:[],       // {afterN, date, amount}
   offers:{},            // {33:'kept'|'taken'}
   claimed:[],           // reward ids the user has seen the reward screen for
   videoStartedAt:null,
-  videoStartedFor:null
+  videoStartedFor:null,
+  level:'basic'        // 'basic' = video od basicStart do konce · 'advanced' = celé video
 };
 let S=loadLocal();
 function normalize(o){return {...structuredClone(DEFAULTS),...o,settings:{...DEFAULTS.settings,...(o.settings||{})}}}
@@ -528,7 +533,7 @@ function render(){
   $('prog').querySelector('i').style.width=(k/N()*100)+'%';
   $('prog').querySelectorAll('.ph').forEach((e,i)=>e.style.left=(S.settings.offerDays[i]/N()*100)+'%');
   $('goalTxt').textContent=fmt(Math.round(project(0,N()).pop()/10)*10,0);
-  $('ruleDep').textContent=kc(DEP(),0); $('ruleRate').textContent=fmt(R()*100,0)+' %'; $('wiDep').textContent=kc(DEP(),0);
+  $('ruleDep').textContent=kc(DEP(),0); $('ruleBasic').textContent=mmss((S.settings.basicStart||0)*1000); $('ruleRate').textContent=fmt(R()*100,0)+' %'; $('wiDep').textContent=kc(DEP(),0);
   const svg=catSVG(); $('catToday').innerHTML=svg; $('catBig').innerHTML=svg;
   const bd=currentBackdrop(); ['stageToday','stageBig'].forEach(id=>{const e=$(id);e.className='stage'+(bd?' bd-'+bd:'')});
   const tl=toys(), pos=[[6,62],[82,60],[10,20],[80,16],[46,8],[60,78]];
@@ -553,6 +558,7 @@ function loadYT(cb){
     setTimeout(()=>{if(!(window.YT&&YT.Player)){const el=$('ytFallback');if(el)el.hidden=false}},6000)}
 }
 window.onYouTubeIframeAPIReady=()=>{const cbs=ytReadyCbs;ytReadyCbs=[];cbs.forEach(f=>f())};
+const parseMmss=v=>{const m=String(v||'').trim().match(/^(\d+):(\d{1,2})$/);if(m)return +m[1]*60+ +m[2];const n=parseInt(v,10);return isNaN(n)?0:n};
 const mmss=ms=>{const s=Math.ceil(ms/1000);return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`};
 function markVideoStarted(t){if(S.videoStartedFor!==t){S.videoStartedAt=Date.now();S.videoStartedFor=t;save()}}
 
@@ -571,17 +577,20 @@ function renderCheckin(){
   const url=S.settings.videoUrl, id=ytId(url), started=S.videoStartedFor===t?S.videoStartedAt:null;
   const need=S.settings.minMinutes*60000, left=started?Math.max(0,need-(Date.now()-started)):need;
   const ready=!url||(started&&left<=0);
+  const lvl=S.level==='advanced'?'advanced':'basic', bs=S.settings.basicStart||0;
   el.innerHTML=`<div class="eyebrow">Dnešní check-in</div><h2 style="margin-top:6px">${url?'Pusť si priming. Až dojede, kočka si pro vklad dojde sama.':'Dnes stačí odkliknout — rodič ještě nenastavil video.'}</h2>
+  ${url?`<div class="level" role="tablist"><button data-testid="level-basic" class="${lvl==='basic'?'on':''}" id="lvlBasic">Základní<small>od ${mmss(bs*1000)} do konce</small></button><button data-testid="level-advanced" class="${lvl==='advanced'?'on':''}" id="lvlAdv">Pokročilý<small>celé video</small></button></div>`:''}
   ${id?`<div class="player"><div id="ytPlayer"></div></div>`:''}
   ${url&&!id?`<a class="btn ghost" href="${esc(url)}" target="_blank" rel="noopener" id="playBtn" data-testid="play-video" style="margin-top:10px">▶ Spustit video</a>`:''}
-  <div id="ytFallback" ${id?'hidden':''}>${id?`<p class="small" style="margin:8px 0">Video se tu nechce přehrát? <a href="${esc(url)}" target="_blank" rel="noopener" id="playBtn2">Otevři ho na YouTube</a> a pak se vrať.</p>`:''}
+  <div id="ytFallback" ${id?'hidden':''}>${id?`<p class="small" style="margin:8px 0">Video se tu nechce přehrát? <a href="${esc(lvl==='basic'&&bs?'https://www.youtube.com/watch?v='+id+'&t='+bs+'s':url)}" target="_blank" rel="noopener" id="playBtn2">Otevři ho na YouTube</a> a pak se vrať.</p>`:''}
     <p class="small" style="margin:8px 0" id="fbNote">${ready?'':`Nouzové tlačítko se odemkne za <b id="cnt">${mmss(left)}</b>.`}</p>
     <button class="btn gold" id="doneBtn" data-testid="checkin-done" ${ready?'':'disabled'}>🪙 Mám hotovo — připsat ${kc(DEP(),0)} + úrok</button>
   </div>`;
+  [['lvlBasic','basic'],['lvlAdv','advanced']].forEach(([i,v])=>{const b=$(i);if(b)b.addEventListener('click',()=>{if(S.level!==v){S.level=v;save();renderCheckin()}})});
   ['playBtn','playBtn2'].forEach(i=>{const p=$(i);if(p)p.addEventListener('click',()=>{markVideoStarted(t);setTimeout(renderCheckin,300)})});
   $('doneBtn').addEventListener('click',()=>doCheckin('button'));
   if(!ready&&started){window._cnt=setInterval(()=>{const l=Math.max(0,need-(Date.now()-started));const c=$('cnt');if(c)c.textContent=mmss(l);if(l<=0){clearInterval(window._cnt);renderCheckin()}},1000)}
-  if(id){loadYT(()=>{if(!$('ytPlayer'))return;try{ytPlayer=new YT.Player('ytPlayer',{videoId:id,playerVars:{rel:0,modestbranding:1,playsinline:1},events:{
+  if(id){loadYT(()=>{if(!$('ytPlayer'))return;try{ytPlayer=new YT.Player('ytPlayer',{videoId:id,playerVars:{rel:0,modestbranding:1,playsinline:1,start:lvl==='basic'?bs:0},events:{
       onStateChange:e=>{if(e.data===YT.PlayerState.PLAYING){markVideoStarted(t);const n=$('fbNote');if(n&&!$('cnt'))renderFallbackTimer(t)} if(e.data===YT.PlayerState.ENDED&&!S.checkins.some(c=>c.date===todayStr()))doCheckin('video')},
       onError:()=>{const el=$('ytFallback');if(el)el.hidden=false}}})}catch(e){const el=$('ytFallback');if(el)el.hidden=false}})}
 }
@@ -598,7 +607,7 @@ function doCheckin(source){
   const c=S.checkins[S.checkins.length-1];
   const reward=REWARDS.find(r=>r.n===c.n);
   const stBefore=stageIdx(c.n-1), stAfter=stageIdx(c.n);
-  save([{type:'checkin',n:c.n,date:t,source,deposit:c.deposit,interest:+c.interest.toFixed(2),after:+c.after.toFixed(2)}]);
+  save([{type:'checkin',n:c.n,date:t,source,level:S.level||'basic',deposit:c.deposit,interest:+c.interest.toFixed(2),after:+c.after.toFixed(2)}]);
   render(); confetti(220); if(ytPlayer&&ytPlayer.stopVideo)try{ytPlayer.stopVideo()}catch(e){}
   const sk=streak(), sur=surpriseFor(c.n);
   const screens=[];
@@ -708,7 +717,7 @@ function openSettings(){
   const s=S.settings;
   openSheet(`<div class="eyebrow">Pro rodiče</div><h2 style="margin-top:6px">Nastavení výzvy</h2>
   <div class="field" style="margin-top:14px"><label>Odkaz na priming video (YouTube se přehraje přímo tady)</label><input id="fUrl" value="${esc(s.videoUrl)}" placeholder="https://youtu.be/…"></div>
-  <div class="row"><div class="field"><label>Start výzvy</label><input id="fStart" type="date" value="${esc(s.startDate)}"></div><div class="field"><label>Nouzové tlačítko po (min)</label><input id="fMin" type="number" min="0" value="${s.minMinutes}"></div></div>
+  <div class="row"><div class="field"><label>Start výzvy</label><input id="fStart" type="date" value="${esc(s.startDate)}"></div><div class="field"><label>Základní level od (m:ss)</label><input id="fBasic" value="${mmss((s.basicStart||0)*1000)}" placeholder="2:30"></div><div class="field"><label>Nouzové tl. po (min)</label><input id="fMin" type="number" min="0" value="${s.minMinutes}"></div></div>
   <div class="row"><div class="field"><label>Jméno kočky</label><input id="fCat" value="${esc(s.catName)}"></div><div class="field"><label>Nový PIN (prázdné = beze změny)</label><input id="fPin" inputmode="numeric" maxlength="4" placeholder="••••"></div></div>
   <div class="row"><div class="field"><label>Cílová částka Kč</label><input id="fTarget" type="number" value="${s.target}"></div><div class="field"><label>Úrok % / den</label><input id="fRate" type="number" step="0.1" value="${s.rate*100}"></div><div class="field"><label>Dní</label><input id="fDays" type="number" value="${s.days}"></div></div>
   <p class="small" id="calc" style="margin:-4px 0 12px"></p>
@@ -721,7 +730,7 @@ function openSettings(){
   <div class="row"><button class="btn ghost" id="restoreBtn">Obnovit ze zálohy</button><button class="btn coral" id="resetBtn">Smazat vše</button></div>`,()=>{
     const upd=()=>{const t=+$('fTarget').value,r=+$('fRate').value/100,d=+$('fDays').value;const dep=Math.max(1,Math.ceil(derivedDeposit(t,r,d)-1e-9));const fin=project(0,d,r,dep).pop();$('calc').textContent=`→ denní vklad ${kc(dep,0)}, po ${d} dnech ≈ ${kc(fin,0)} (vklady ${kc(dep*d,0)}, úroky ${kc(fin-dep*d,0)}). Nabídky na dni ${Math.round(d/3)} a ${Math.round(d/3)*2}.`;return {t,r,d,dep}};
     ['fTarget','fRate','fDays'].forEach(id=>$(id).addEventListener('input',upd));upd();
-    $('saveSet').onclick=()=>{const {t,r,d,dep}=upd();Object.assign(S.settings,{videoUrl:$('fUrl').value.trim(),startDate:$('fStart').value||s.startDate,minMinutes:+$('fMin').value||0,catName:$('fCat').value.trim()||'Mince',target:t,rate:r,days:d,deposit:dep,offerDays:[Math.round(d/3),Math.round(d/3)*2]});const p=$('fPin').value.trim();if(/^\d{4}$/.test(p))S.settings.pin=p;recompute();save([{type:'settings',target:t,rate:r,days:d,deposit:dep,startDate:S.settings.startDate,video:!!S.settings.videoUrl}]);closeSheet();render();toast('Uloženo')};
+    $('saveSet').onclick=()=>{const {t,r,d,dep}=upd();Object.assign(S.settings,{videoUrl:$('fUrl').value.trim(),startDate:$('fStart').value||s.startDate,basicStart:parseMmss($('fBasic').value),minMinutes:+$('fMin').value||0,catName:$('fCat').value.trim()||'Mince',target:t,rate:r,days:d,deposit:dep,offerDays:[Math.round(d/3),Math.round(d/3)*2]});const p=$('fPin').value.trim();if(/^\d{4}$/.test(p))S.settings.pin=p;recompute();save([{type:'settings',target:t,rate:r,days:d,deposit:dep,startDate:S.settings.startDate,video:!!S.settings.videoUrl}]);closeSheet();render();toast('Uloženo')};
     $('simBtn').onclick=()=>{const dates=new Set(S.checkins.map(c=>c.date));let d=todayStr();while(dates.has(d))d=addDays(d,-1);S.checkins.push({date:d});S.checkins.sort((a,b)=>a.date<b.date?-1:1);recompute();save([{type:'test-day',date:d}]);render();toast(`Přidán den ${S.checkins.length}`);openSettings()};
     $('undoBtn').onclick=()=>{const c=S.checkins.pop();if(c){S.withdrawals=S.withdrawals.filter(w=>w.afterN<=S.checkins.length);Object.keys(S.offers).forEach(k=>{if(+k>S.checkins.length)delete S.offers[k]});S.claimed=S.claimed.filter(id=>{const r=REWARDS.find(x=>x.id===id);return r&&r.n<=S.checkins.length});recompute();save([{type:'undo-day',date:c.date}]);render();openSettings()}};
     $('restoreBtn').onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($('backup').value.trim()))));S=normalize(o);recompute();save([{type:'restore'}]);closeSheet();render();toast('Obnoveno')}catch(e){toast('Záloha není čitelná')}};

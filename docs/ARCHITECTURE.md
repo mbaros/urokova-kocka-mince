@@ -33,7 +33,7 @@ graph TB
 
 1. Stránka se načte s prefixem `/k/<secret>/` a `?k=<token>`; všechny API požadavky jsou relativní (`api/state` + `location.search`), takže token a prefix procházejí přes Caddy.
 2. `pullSync()` → `GET api/state`. 404 = server prázdný → klient pošle svůj stav; 200 = server přepíše localStorage (server je zdroj pravdy).
-3. Rodič nastaví YouTube URL. `renderCheckin()` vloží YouTube IFrame Player; na `ENDED` se zavolá `doCheckin('video')`. Fallback: po `minMinutes` od prvního `PLAYING` (nebo od kliknutí na externí odkaz) se odemkne nouzové tlačítko `doCheckin('button')`.
+3. Rodič nastaví YouTube URL. Dcera zvolí level: **základní** (přehrávač startuje na `settings.basicStart`, výchozí 150 s) nebo **pokročilý** (celé video); volba je v `state.level`. `renderCheckin()` vloží YouTube IFrame Player; na `ENDED` se zavolá `doCheckin('video')`. Fallback: po `minMinutes` od prvního `PLAYING` (nebo od kliknutí na externí odkaz) se odemkne nouzové tlačítko `doCheckin('button')`.
 4. `doCheckin()` přidá check-in pro dnešní datum, `recompute()` přepočte řetězec (`balance = (balance + vklad) × 1,03`), `save(events)` → localStorage + debounced `PUT api/state` s eventy.
 5. Oslava: 3 obrazovky (gratulace k N. dni → „Dnes jsi kočičku vylepšila o“ s count-upem → nová odměna, pokud padla na tento den).
 6. Na dni `offerDays` (33, 66) se zobrazí nabídka výběru; `kept`/`taken` se zapíše do `offers`, `taken` navíc do `withdrawals` (zůstatek → 0, vklady pokračují).
@@ -59,12 +59,12 @@ graph TB
 
 ```json
 {
-  "settings": {"rate":0.03,"target":10000,"days":100,"deposit":16,"videoUrl":"","minMinutes":5,"pin":"1234","catName":"Mince","offerDays":[33,66],"startDate":"2026-08-31"},
+  "settings": {"rate":0.03,"target":10000,"days":100,"deposit":16,"videoUrl":"","minMinutes":5,"pin":"1234","catName":"Mince","offerDays":[33,66],"startDate":"2026-08-31","basicStart":150},
   "checkins": [{"date":"2026-08-31","n":1,"deposit":16,"interest":0.48,"before":0,"after":16.48}],
   "withdrawals": [{"afterN":33,"date":"…","amount":907.68}],
   "offers": {"33":"kept"},
   "claimed": ["r1"],
-  "videoStartedAt": null, "videoStartedFor": null
+  "videoStartedAt": null, "videoStartedFor": null, "level": "basic"
 }
 ```
 

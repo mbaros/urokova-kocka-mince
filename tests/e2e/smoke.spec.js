@@ -38,7 +38,7 @@ function collectErrors(page) {
 test.describe('Úroková kočka smoke', () => {
   test.beforeEach(async ({ page }) => {
     // Fonts come from Google; the suite must not depend on that network being reachable.
-    await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+    await page.route(/fonts\.(googleapis|gstatic)\.com|youtube\.com|ytimg\.com/, (r) => r.abort());
     await page.goto('/');
     await seed(page, stateWith(0));
   });
@@ -90,6 +90,20 @@ test.describe('Úroková kočka smoke', () => {
     await expect(page.getByTestId('balance')).toHaveText('16');
     const saved = await (await page.request.get('/api/state')).json();
     expect(saved.state.checkins).toHaveLength(1);
+  });
+
+  test('with a video set, the level toggle (základní od 2:30 / pokročilý celé) is remembered on the server', async ({ page }) => {
+    await seed(page, stateWith(0, { videoUrl: 'https://youtu.be/dQw4w9WgXcQ' }));
+    await page.goto('/');
+    await expect(page.getByTestId('level-basic')).toHaveClass(/on/);
+    await expect(page.getByTestId('level-basic')).toContainText('od 2:30 do konce');
+    await page.getByTestId('level-advanced').click();
+    await expect(page.getByTestId('level-advanced')).toHaveClass(/on/);
+    await expect(page.locator('#sync')).toHaveText(/uloženo na serveru/);
+    const saved = await (await page.request.get('/api/state')).json();
+    expect(saved.state.level).toBe('advanced');
+    // The emergency button is locked until the video has been playing for minMinutes.
+    await expect(page.getByTestId('checkin-done')).toBeDisabled();
   });
 
   test('after 100 check-ins the balance is ≈ 10 008 Kč', async ({ page }) => {

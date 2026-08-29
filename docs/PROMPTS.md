@@ -41,3 +41,18 @@ Kompletní přepis `app/index.html` (server sync, YouTube embed, oslava, odměny
 - Playwright: načtení bez JS chyb + sync, odpočet před startem, easter egg kliknutím, první check-in (3 obrazovky + server persist), 100 dní ≈ 10 008 Kč, nabídka den 33 (kept/taken), taby + graf + odměny, rodičovský PIN + přepočet vkladu
 
 ---
+
+## Prompt #4 — 2026-08-29 09:00
+
+**User prompt:**
+> to video je tohle [odkaz nedorazil] — ještě přidej level základní / pokročilý; pokročilý bude celé video, základní bude video od 2:30 do konce
+
+**Plan:** přepínač levelu na kartě check-inu → YouTube `start` param / `&t=` u odkazu → uložit volbu do stavu a do eventu → nastavení začátku v rodičovské sekci → test → deploy.
+
+**Summary of what was done:** Hotovo dle plánu; URL videa je třeba doplnit v rodičovském nastavení (v promptu nebyl odkaz).
+
+**Files changed:** `app/index.html`, `tests/e2e/smoke.spec.js`, `docs/*`
+
+**Tests added/modified:** level toggle scénář
+
+---
