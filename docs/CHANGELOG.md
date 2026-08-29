@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-08-29] Prompt #14
+
+### Changed
+- Návod, strana 2: kočičí tip — večer nabít sluchátka a dát je k telefonu, ať jde video poslouchat kdekoli.
+
+---
+
 ## [2026-08-29] Prompt #13 — otázky i když Mince spí
 
 ### Added
