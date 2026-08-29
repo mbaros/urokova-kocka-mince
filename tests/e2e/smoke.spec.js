@@ -151,6 +151,29 @@ test.describe('Úroková kočka smoke', () => {
     await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.school.asked).toBe(2);
   });
 
+  test('when the answerer sleeps, the chat says so and the suggested questions do nothing harmful', async ({ page }) => {
+    await page.request.put('/api/ask/mock', { data: { asleep: true } });
+    try {
+      await seed(page, stateWith(3));
+      await page.goto('/');
+      await page.getByTestId('tab-school').click();
+      await page.getByTestId('ask-open').click();
+      await expect(page.getByTestId('chat-asleep')).toBeVisible();
+      await expect(page.locator('#chips button')).toHaveCount(0);
+      await expect(page.getByTestId('ask-input')).toBeDisabled();
+      // API agrees
+      expect((await page.request.post('/api/ask', { data: { question: 'Ahoj?' } })).status()).toBe(503);
+    } finally {
+      await page.request.put('/api/ask/mock', { data: { asleep: false } });
+    }
+    // and once awake, the same chat works again after reopening
+    await page.locator('#sheet').getByRole('button', { name: 'Zavřít' }).click();
+    await page.getByTestId('ask-open').click();
+    await expect(page.locator('#chips button')).toHaveCount(2); // the lesson's two starter questions
+    await page.locator('#chips button').first().click();
+    await expect(page.locator('#chatLog .msg.cat')).toContainText('zkušební odpověď');
+  });
+
   test('the withdrawal offer explains both choices in a FAQ', async ({ page }) => {
     await seed(page, stateWith(33));
     await page.goto('/');
@@ -236,5 +259,102 @@ test.describe('Úroková kočka smoke', () => {
     await expect(page.locator('#calc')).toContainText('denní vklad 16 Kč');
     await page.locator('#fRate').fill('2');
     await expect(page.locator('#calc')).toContainText('denní vklad 32 Kč');
+  });
+
+  test('tutorial can be skipped, replayed from parent settings, and greets by the configured name', async ({ page }) => {
+    await seed(page, { settings: { ...STARTED, kidName: 'Terezko', catName: 'Micka' } });
+    await page.goto('/');
+    await expect(page.getByTestId('tutorial')).toContainText('Ahoj Terezko, já jsem Micka');
+    await page.getByTestId('tutorial-next').click();
+    await page.locator('#tutBack').click();
+    await expect(page.getByTestId('tutorial')).toContainText('Ahoj Terezko');
+    await page.getByTestId('tutorial-skip').click();
+    await expect(page.getByTestId('tutorial')).toHaveCount(0);
+    await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.tutorialDone).toBe(true);
+    await page.getByTestId('parent-gear').click();
+    const digits = page.getByTestId('pinbox').locator('input');
+    for (const [i, d] of ['1', '2', '3', '4'].entries()) await digits.nth(i).fill(d);
+    await page.getByTestId('settings-tutorial').click();
+    await expect(page.getByTestId('tutorial')).toContainText('Ahoj Terezko');
+  });
+
+  test('a wrong PIN is rejected; the right one opens settings', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('parent-gear').click();
+    const digits = page.getByTestId('pinbox').locator('input');
+    for (const [i, d] of ['9', '9', '9', '9'].entries()) await digits.nth(i).fill(d);
+    await expect(page.locator('#pinErr')).toHaveText('Špatný PIN');
+    await expect(page.locator('#sheet')).not.toContainText('Nastavení výzvy');
+    for (const [i, d] of ['1', '2', '3', '4'].entries()) await digits.nth(i).fill(d);
+    await expect(page.locator('#sheet')).toContainText('Nastavení výzvy');
+  });
+
+  test('parent settings: test day, undo, changed name/PIN persist; reset keeps settings', async ({ page }) => {
+    await page.goto('/');
+    const openSettings = async (pin) => {
+      await page.getByTestId('parent-gear').click();
+      const digits = page.getByTestId('pinbox').locator('input');
+      for (const [i, d] of pin.split('').entries()) await digits.nth(i).fill(d);
+      await expect(page.locator('#sheet')).toContainText('Nastavení výzvy');
+    };
+    await openSettings('1234');
+    await page.getByTestId('settings-sim-day').click();
+    await page.getByTestId('settings-sim-day').click();
+    await expect(page.locator('#dayLabel')).toHaveText('Den 2 ze 100');
+    await page.locator('#undoBtn').click();
+    await expect(page.locator('#dayLabel')).toHaveText('Den 1 ze 100');
+    await page.locator('#fCat').fill('Micka');
+    await page.locator('#fPin').fill('6666');
+    await page.getByTestId('settings-save').click();
+    await expect(page.locator('#catName')).toHaveText('Micka');
+    await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.settings.pin).toBe('6666');
+    page.once('dialog', (d) => d.accept());
+    await openSettings('6666');
+    await page.locator('#resetBtn').click();
+    await expect(page.locator('#dayLabel')).toHaveText('Den 0 ze 100');
+    await expect(page.locator('#catName')).toHaveText('Micka'); // settings survive a reset
+  });
+
+  test('declining the withdrawal confirmation keeps the offer open', async ({ page }) => {
+    await seed(page, stateWith(33));
+    await page.goto('/');
+    await page.getByTestId('offer-take').click();
+    await page.locator('#sheet').getByRole('button', { name: 'Ještě ne' }).click();
+    await expect(page.getByTestId('offer-take')).toBeVisible();
+    await expect(page.getByTestId('balance')).toHaveText(/908/);
+  });
+
+  test('rewards unlock the cat gear and show up on the Odměny tab', async ({ page }) => {
+    await seed(page, stateWith(10));
+    await page.goto('/');
+    await expect(page.locator('#catToday svg')).toBeVisible();
+    await expect(page.locator('#catLvl')).toContainText('kočka');
+    await expect(page.locator('#catTitle')).toHaveText('Nováček');
+    await page.getByTestId('tab-mile').click();
+    await expect(page.locator('#mileList .mi:not(.locked)')).toHaveCount(5);
+    await expect(page.locator('#mileList')).toContainText('Korunka');
+  });
+
+  test('the daily easter egg follows the challenge day', async ({ page }) => {
+    await seed(page, stateWith(31));
+    await page.goto('/');
+    await page.getByTestId('cat').locator('svg').click({ force: true });
+    await expect(page.locator('#bubbleToday')).toHaveText('tadá!'); // egg 31 = flip
+    await seed(page, stateWith(9));
+    await page.goto('/');
+    await page.getByTestId('cat').locator('svg').click({ force: true });
+    await expect(page.locator('#bubbleToday')).toHaveText('Fuj! Mokro!'); // egg 9 = drop
+  });
+
+  test('a lesson reopened from Škola counts as read and its chat carries the lesson context', async ({ page }) => {
+    await seed(page, stateWith(3));
+    await page.goto('/');
+    await page.getByTestId('tab-school').click();
+    await page.getByTestId('chapter-1').click();
+    await page.locator('[data-open="2"]').click();
+    await expect(page.getByTestId('lesson')).toContainText('Příjem a výdaj');
+    await page.locator('#lessonClose').click();
+    await expect(page.locator('#schoolTiles')).toContainText('1');
+    await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.school?.read).toEqual([2]);
   });
 });

@@ -811,13 +811,14 @@ async function openChat(lesson){
     $('askSend').onclick=()=>sendAsk($('askIn').value);
     $('askIn').addEventListener('keydown',e=>{if(e.key==='Enter')sendAsk($('askIn').value)});
     try{const r=await fetch(api('ask/status'),{cache:'no-store'});const j=await r.json();$('askQuota').textContent=`dnes ${j.askedToday} z ${j.limit}`;
-      if(!j.alive){$('chatLog').innerHTML=`<div class="msg cat">Zzz… zrovna spím a nemůžu odpovídat. Zkus to za chvíli — nebo se zeptej táty. 😴</div>`;$('askIn').disabled=true;$('askSend').disabled=true}
+      if(!j.alive)chatAsleep();
     }catch(e){$('askQuota').textContent='offline'}
   });
 }
+function chatAsleep(){chat.asleep=true;$('chatLog').innerHTML=`<div class="msg cat" data-testid="chat-asleep">Zzz… zrovna spím a nemůžu odpovídat. Zkus to za chvíli — nebo se zeptej táty. 😴</div>`;$('chips').innerHTML='';$('askIn').disabled=true;$('askIn').placeholder='Mince spí…';$('askSend').disabled=true}
 function renderChips(list){$('chips').innerHTML=(list||[]).map(q=>`<button data-q="${esc(q)}">${esc(q)}</button>`).join('');$('chips').querySelectorAll('button').forEach(b=>b.onclick=()=>sendAsk(b.dataset.q))}
 async function sendAsk(q){
-  q=(q||'').trim(); if(!q)return; const log=$('chatLog'), inp=$('askIn'), btn=$('askSend'); if(btn.disabled)return;
+  q=(q||'').trim(); if(!q)return; const log=$('chatLog'), inp=$('askIn'), btn=$('askSend'); if(chat.asleep){toast('Mince zrovna spí — zkus to později.');return} if(btn.disabled)return;
   inp.value=''; btn.disabled=true; inp.disabled=true; $('chips').innerHTML='';
   log.insertAdjacentHTML('beforeend',`<div class="msg me">${esc(q)}</div><div class="thinking" id="thinking"><i></i><i></i><i></i> Mince přemýšlí…</div>`); log.scrollTop=log.scrollHeight;
   try{
@@ -825,6 +826,7 @@ async function sendAsk(q){
     if(chat.lesson){body.lessonN=chat.lesson.n;body.lessonTitle=chat.lesson.t;body.lessonText=chat.lesson.p}
     const r=await fetch(api('ask'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
     const j=await r.json(); $('thinking')?.remove();
+    if(r.status===503){chatAsleep();return}
     if(!r.ok)throw new Error(j.detail||('HTTP '+r.status));
     chat.history.push({q,a:j.answer}); S.school.asked++; save([{type:'ask',n:chat.lesson?chat.lesson.n:null,q}]);
     log.insertAdjacentHTML('beforeend',`<div class="msg cat">${esc(j.answer).replace(/\n/g,'<br>')}</div>`); renderChips(j.followups);

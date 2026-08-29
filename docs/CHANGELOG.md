@@ -3,6 +3,10 @@
 ## [2026-08-29] Prompt #12
 
 ### Fixed
+- Chat se spící Mincí: navrhované otázky šly klepnout, ale nic se nedělo → při spánku se schovají, vstup se zamkne, klepnutí řekne proč; 503 z API se ukáže jako spánek.
+
+### Tests
+- +8 scénářů: spící odpovídač (test-only `PUT /api/ask/mock`), tutoriál skip/zpět/znovu + oslovení, špatný PIN, nastavení (testovací den, undo, jméno, PIN, reset zachová nastavení), zrušení výběru, odměny + výbava na dni 10, easter egg podle dne (31 = otočka, 9 = kapka), znovuotevřená lekce ze Školy. Celkem 23 Playwright + 8 API kontrol. Pre-push hook `.githooks/pre-push` blokuje push při červených testech.
 - Rychlé klepání na telefonu přibližovalo stránku (double-tap zoom) → `touch-action: manipulation` + `maximum-scale=1`.
 
 ---

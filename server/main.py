@@ -160,9 +160,30 @@ def _worker_alive() -> bool:
         return False
 
 
+_mock_asleep = False
+
+
+class MockBody(BaseModel):
+    asleep: bool = False
+
+
+@app.put("/api/ask/mock")
+def ask_mock(body: MockBody) -> dict[str, Any]:
+    """Test-only (ASK_MOCK=1): pretend the worker is asleep."""
+    global _mock_asleep
+    if not ASK_MOCK:
+        raise HTTPException(status_code=404)
+    _mock_asleep = body.asleep
+    return {"asleep": _mock_asleep}
+
+
+def _alive() -> bool:
+    return (ASK_MOCK and not _mock_asleep) or (not ASK_MOCK and _worker_alive())
+
+
 @app.get("/api/ask/status")
 def ask_status() -> dict[str, Any]:
-    return {"alive": ASK_MOCK or _worker_alive(), "askedToday": _asks_today(), "limit": ASK_DAILY_LIMIT, "mock": ASK_MOCK}
+    return {"alive": _alive(), "askedToday": _asks_today(), "limit": ASK_DAILY_LIMIT, "mock": ASK_MOCK}
 
 
 @app.post("/api/ask")
@@ -173,14 +194,14 @@ async def ask(body: AskBody) -> dict[str, Any]:
         raise HTTPException(status_code=429, detail=f"Dnes už jsi se zeptala {used}×. Zítra zase.")
     req_id = f"{int(time.time())}-{secrets.token_hex(4)}"
     started = _now()
+    if not _alive():
+        raise HTTPException(status_code=503, detail="Mince zrovna spí (odpovídač neběží). Zkus to za chvíli.")
     if ASK_MOCK:
         result = {
             "answer": f"(zkušební odpověď) Ptáš se: „{body.question}“. Krátká verze: čas násobí víc než částka.",
             "followups": ["A co inflace?", "Kde seženu vyšší úrok?", "Jak to spočítám?"],
         }
     else:
-        if not _worker_alive():
-            raise HTTPException(status_code=503, detail="Mince zrovna spí (odpovídač neběží). Zkus to za chvíli.")
         req = {"id": req_id, "at": started, **body.model_dump()}
         _write_atomic(ASK_DIR / f"req-{req_id}.json", json.dumps(req, ensure_ascii=False))
         res_path = ASK_DIR / f"res-{req_id}.json"

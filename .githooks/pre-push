@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Blocks `git push` unless bin/e2e-smoke is green (.agentic principle #2: nothing ships red).
+# Enable once per clone:  git config core.hooksPath .githooks
+cd "$(git rev-parse --show-toplevel)"
+echo "→ pre-push: running bin/e2e-smoke"
+if bin/e2e-smoke > /tmp/kocka-e2e.log 2>&1; then
+  tail -1 /tmp/kocka-e2e.log
+else
+  tail -25 /tmp/kocka-e2e.log
+  echo "✗ e2e failed — push blocked (log: /tmp/kocka-e2e.log)"
+  exit 1
+fi

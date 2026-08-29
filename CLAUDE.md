@@ -35,8 +35,9 @@
 ## Setup (lokálně)
 
 ```bash
-pip install -r server/requirements.txt
+python3 -m venv .venv && .venv/bin/pip install -r server/requirements.txt   # bin/e2e-smoke použije .venv, když existuje
 cd tests && npm install && npx playwright install chromium && cd ..
+git config core.hooksPath .githooks     # pre-push spustí bin/e2e-smoke; červené testy = push se nepustí
 ```
 
 ## Spuštění
@@ -84,7 +85,8 @@ ssh martin1 ~/projects/urokova-kocka-mince/deploy/deploy.sh
 - Google Fonts a YouTube jsou externí; testy je blokují (`page.route`), e2e nesmí na síti záviset.
 - Playwright bez staženého Chromia: `PW_CHROMIUM_PATH=/cesta/k/chrome bin/e2e-smoke`.
 - Výchozí PIN rodiče je `1234` — změnit v nastavení hned po nasazení.
-- `bin/e2e-smoke` startuje server s `ASK_MOCK=1`; chat v testech dostává zkušební odpověď, worker není potřeba.
+- `bin/e2e-smoke` startuje server s `ASK_MOCK=1`; chat v testech dostává zkušební odpověď, worker není potřeba. `PUT /api/ask/mock {asleep:true}` (jen v mock režimu) simuluje spícího odpovídače.
+- **Před každým nasazením**: `bin/e2e-smoke` zelené (hlídá i pre-push hook) + ruční proklik změněné obrazovky v prohlížeči (Playwright na Macu proti produkční URL, `tests/prod-check.cjs` vzor v historii).
 - Lekce v `app/lessons.js` jsou číslované 1–100 a testy počítají s konkrétními tituly (1 „Co jsou vlastně peníze“, 7 „Kam mizí drobné“, kvíz 5 odpověď C).
 
 ## Interní cesty / endpointy

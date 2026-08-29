@@ -10,6 +10,7 @@ set -u
 cd "$(dirname "$0")/.."
 
 PORT=8765
+PY="${PYTHON:-python3}"; [ -x .venv/bin/python ] && PY=.venv/bin/python   # local venv (macOS: PEP 668) wins
 LOCAL="http://127.0.0.1:$PORT"
 BASE="${1:-$LOCAL}"
 ANSI_GREEN=$'\033[32m'; ANSI_RED=$'\033[31m'; ANSI_DIM=$'\033[2m'; ANSI_RESET=$'\033[0m'
@@ -27,7 +28,7 @@ step() { printf "%s── %s%s\n" "$ANSI_DIM" "$1" "$ANSI_RESET"; }
 step "0. Local server"
 TMPDATA=$(mktemp -d)
 mkdir -p "$TMPDATA/video" && printf "x" > "$TMPDATA/video/priming.mp4"   # presence is enough for the UI test
-ASK_MOCK=1 DATA_DIR="$TMPDATA" python3 -m uvicorn server.main:app --host 127.0.0.1 --port "$PORT" --log-level warning >/tmp/_kocka_uvicorn.log 2>&1 &
+ASK_MOCK=1 DATA_DIR="$TMPDATA" "$PY" -m uvicorn server.main:app --host 127.0.0.1 --port "$PORT" --log-level warning >/tmp/_kocka_uvicorn.log 2>&1 &
 SERVER_PID=$!
 for _ in $(seq 1 20); do curl -s -o /dev/null "$LOCAL/" && break; sleep 0.2; done
 curl -s -o /dev/null "$LOCAL/" && ok "server on $LOCAL" || bad "server did not start" "$(tail -5 /tmp/_kocka_uvicorn.log)"
