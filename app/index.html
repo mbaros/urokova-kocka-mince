@@ -368,8 +368,10 @@ details summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--muted)
 <div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
 <canvas class="confetti" id="confetti"></canvas>
 <div class="toast" id="toast"></div>
-<script src="lessons.js"></script>
-<script src="eggs.js"></script>
+<script>
+// Static assets must carry the same ?k= token as the page (Caddy answers 404 without it).
+document.write(['lessons.js','eggs.js'].map(f=>'<script src="'+f+location.search+'"><\/script>').join(''));
+</script>
 <script>
 /* ============ STATE ============ */
 const KEY='urokova-kocka-v1';
