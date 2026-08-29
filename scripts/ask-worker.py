@@ -113,14 +113,40 @@ def handle_pending() -> int:
     return n
 
 
+_probe_ok = False
+_probe_at = 0.0
+
+
+def probe() -> bool:
+    """Is Claude Code actually able to answer (token valid)? Cached for 10 minutes.
+    The heartbeat is only written while this is true, so the app shows „Mince spí“
+    instead of failing on every question when the login expired."""
+    global _probe_ok, _probe_at
+    if time.time() - _probe_at < 600:
+        return _probe_ok
+    _probe_at = time.time()
+    try:
+        run = subprocess.run([CLAUDE_BIN, "-p", "Odpověz jedním slovem: ok", "--model", MODEL, "--output-format", "json", "--max-turns", "1"],
+                             capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
+        data = json.loads(run.stdout) if run.stdout.strip() else {}
+        _probe_ok = bool(run.stdout.strip()) and not data.get("is_error")
+        if not _probe_ok:
+            print(f"[ask-worker] probe failed: {str(data.get('result') or run.stderr)[:200]} — run `claude setup-token` and put CLAUDE_CODE_OAUTH_TOKEN into .env", flush=True)
+    except Exception as exc:  # noqa: BLE001
+        _probe_ok = False
+        print(f"[ask-worker] probe error: {exc}", flush=True)
+    return _probe_ok
+
+
 def main() -> None:
     load_env()
     ASK_DIR.mkdir(parents=True, exist_ok=True)
     once = "--once" in sys.argv
     print(f"[ask-worker] watching {ASK_DIR} (model {MODEL})", flush=True)
     while True:
-        (ASK_DIR / "worker.heartbeat").touch()
-        handle_pending()
+        if probe():
+            (ASK_DIR / "worker.heartbeat").touch()
+            handle_pending()
         if once:
             return
         time.sleep(1.0)
