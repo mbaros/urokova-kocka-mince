@@ -19,14 +19,20 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ASK_DIR = Path(os.environ.get("ASK_DIR", ROOT / "data" / "ask"))
+# Remote mode: the ask dir lives on another machine (e.g. run this on a laptop where Claude Code
+# is logged in, against martin1): ASK_REMOTE="martin1:/home/bobek/projects/urokova-kocka-mince/data/ask"
+ASK_REMOTE = os.environ.get("ASK_REMOTE", "")
+SSH = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10"]
 MODEL = os.environ.get("ASK_MODEL", "sonnet")
 CLAUDE_BIN = os.environ.get("CLAUDE_BIN", "claude")
 TIMEOUT_S = int(os.environ.get("ASK_CLAUDE_TIMEOUT_S", "75"))
+WORKDIR = os.environ.get("ASK_WORKDIR", tempfile.mkdtemp(prefix="kocka-ask-"))   # empty cwd: no project CLAUDE.md in context
 
 SYSTEM = """Jsi Mince — kočka z aplikace „Úroková kočka“, která učí patnáctiletou dívku finanční gramotnost.
 Mluvíš česky, v první osobě jako kočka (hravě, vřele, bez poučování), tykáš, oslovuješ ji jménem {kid}.
@@ -35,7 +41,8 @@ Odpověď: nejvýš ~110 slov, srozumitelně pro patnáctiletou, jedna hlavní m
 Nedoporučuj konkrétní produkty, firmy ani „kup tohle“; obecné principy ano. U rizikových věcí (krypto, půjčky) řekni riziko na rovinu.
 Nikdy neříkej, že jsi AI nebo model — jsi kočka Mince. Když otázka nesouvisí s penězi, odpověz krátce a laskavě a vrať se k penězům.
 O jejím otci mluv jako o „taťkovi“ (ne „táta“). Kontext výzvy: každý den dokoukané priming video = vklad 16 Kč a 3 % denní úrok ke všemu; po 100 dnech ≈ 10 008 Kč (1 600 Kč vklady, zbytek úroky); nabídky výběru na dnech 33 a 66.
-VRAŤ POUZE JSON bez komentáře ve tvaru: {{"answer": "...", "followups": ["otázka 1", "otázka 2", "otázka 3"]}}
+VRAŤ POUZE JSON bez komentáře a bez ``` ve tvaru: {{"answer": "...", "followups": ["otázka 1", "otázka 2", "otázka 3"]}}
+Uvnitř textu nikdy nepoužívej rovné uvozovky " (rozbily by JSON) — piš „takhle“ nebo bez uvozovek.
 followups = tři krátké navazující otázky (max 8 slov), které by ji mohly zajímat a posouvají ji dál."""
 
 
@@ -59,13 +66,28 @@ def build_prompt(req: dict) -> str:
 
 
 def extract_json(text: str) -> dict | None:
+    """The model is asked for JSON, but Czech quotes inside strings break it now and then — be forgiving."""
+    text = text.strip().strip("`")
+    text = re.sub(r"^json\s*", "", text)
     m = re.search(r"\{.*\}", text, re.S)
-    if not m:
+    if m:
+        try:
+            return json.loads(m.group(0))
+        except json.JSONDecodeError:
+            pass
+    ans = re.search(r'"answer"\s*:\s*"(.*?)"\s*(?:,\s*"followups"|\})', text, re.S)
+    if not ans:
         return None
-    try:
-        return json.loads(m.group(0))
-    except json.JSONDecodeError:
-        return None
+    fol = re.search(r'"followups"\s*:\s*\[(.*?)\]', text, re.S)
+    followups = re.findall(r'"([^"\n]{3,120})"', fol.group(1)) if fol else []
+    return {"answer": ans.group(1).replace('\\"', '"').replace("\\n", "\n"), "followups": followups}
+
+
+def house_style(text: str) -> str:
+    """Word-level fixes the family asked for: „taťka“, never „táta“."""
+    for a, b in (("táta", "taťka"), ("táty", "taťky"), ("tátovi", "taťkovi"), ("tátu", "taťku"), ("tátou", "taťkou"), ("Táta", "Taťka"), ("Táty", "Taťky")):
+        text = re.sub(rf"\b{a}\b", b, text)
+    return text
 
 
 def answer(req: dict) -> dict:
@@ -73,7 +95,7 @@ def answer(req: dict) -> dict:
     cmd = [CLAUDE_BIN, "-p", build_prompt(req), "--model", MODEL, "--output-format", "json",
            "--max-turns", "1", "--append-system-prompt", system]
     try:
-        run = subprocess.run(cmd, capture_output=True, text=True, timeout=TIMEOUT_S, stdin=subprocess.DEVNULL)
+        run = subprocess.run(cmd, capture_output=True, text=True, timeout=TIMEOUT_S, stdin=subprocess.DEVNULL, cwd=WORKDIR)
     except subprocess.TimeoutExpired:
         return {"error": "timeout"}
     if run.returncode != 0 and not run.stdout.strip():
@@ -87,11 +109,50 @@ def answer(req: dict) -> dict:
     text = str(outer.get("result", ""))
     data = extract_json(text)
     if not data or not data.get("answer"):
-        return {"answer": text.strip()[:2000], "followups": []}
-    return {"answer": str(data["answer"]), "followups": [str(f) for f in (data.get("followups") or [])][:3]}
+        return {"answer": house_style(text.strip()[:2000]), "followups": []}
+    return {"answer": house_style(str(data["answer"])), "followups": [house_style(str(f)) for f in (data.get("followups") or [])][:3]}
+
+
+def _remote() -> tuple[str, str]:
+    host, _, path = ASK_REMOTE.partition(":")
+    return host, path
+
+
+def remote_heartbeat() -> None:
+    host, path = _remote()
+    subprocess.run(SSH + [host, f"touch '{path}/worker.heartbeat'"], capture_output=True, timeout=20)
+
+
+def remote_pending() -> list[str]:
+    """Names of req-*.json on the remote without a matching res-*.json."""
+    host, path = _remote()
+    run = subprocess.run(SSH + [host, f"cd '{path}' 2>/dev/null && ls req-*.json res-*.json 2>/dev/null"], capture_output=True, text=True, timeout=20)
+    names = set(run.stdout.split())
+    return sorted(n for n in names if n.startswith("req-") and n.replace("req-", "res-", 1) not in names)
+
+
+def handle_remote() -> int:
+    host, path = _remote()
+    n = 0
+    for name in remote_pending():
+        run = subprocess.run(SSH + [host, f"cat '{path}/{name}'"], capture_output=True, text=True, timeout=20)
+        try:
+            req = json.loads(run.stdout)
+        except json.JSONDecodeError:
+            continue
+        result = answer(req)
+        res_name = name.replace("req-", "res-", 1)
+        payload = json.dumps(result, ensure_ascii=False)
+        subprocess.run(SSH + [host, f"cat > '{path}/{res_name}.tmp' && mv '{path}/{res_name}.tmp' '{path}/{res_name}'"],
+                       input=payload, capture_output=True, text=True, timeout=20)
+        n += 1
+        print(f"[ask-worker] {req.get('id', name)}: {'error ' + result['error'] if result.get('error') else 'ok'} (remote)", flush=True)
+    return n
 
 
 def handle_pending() -> int:
+    if ASK_REMOTE:
+        return handle_remote()
     n = 0
     for req_path in sorted(ASK_DIR.glob("req-*.json")):
         res_path = ASK_DIR / req_path.name.replace("req-", "res-", 1)
@@ -127,7 +188,7 @@ def probe() -> bool:
     _probe_at = time.time()
     try:
         run = subprocess.run([CLAUDE_BIN, "-p", "Odpověz jedním slovem: ok", "--model", MODEL, "--output-format", "json", "--max-turns", "1"],
-                             capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
+                             capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL, cwd=WORKDIR)
         data = json.loads(run.stdout) if run.stdout.strip() else {}
         _probe_ok = bool(run.stdout.strip()) and not data.get("is_error")
         if not _probe_ok:
@@ -140,16 +201,25 @@ def probe() -> bool:
 
 def main() -> None:
     load_env()
-    ASK_DIR.mkdir(parents=True, exist_ok=True)
     once = "--once" in sys.argv
-    print(f"[ask-worker] watching {ASK_DIR} (model {MODEL})", flush=True)
+    if ASK_REMOTE:
+        print(f"[ask-worker] remote mode → {ASK_REMOTE} (model {MODEL})", flush=True)
+    else:
+        ASK_DIR.mkdir(parents=True, exist_ok=True)
+        print(f"[ask-worker] watching {ASK_DIR} (model {MODEL})", flush=True)
     while True:
-        if probe():
-            (ASK_DIR / "worker.heartbeat").touch()
-            handle_pending()
+        try:
+            if probe():
+                if ASK_REMOTE:
+                    remote_heartbeat()
+                else:
+                    (ASK_DIR / "worker.heartbeat").touch()
+                handle_pending()
+        except Exception as exc:  # noqa: BLE001 — keep the loop alive (ssh hiccups etc.)
+            print(f"[ask-worker] loop error: {exc}", flush=True)
         if once:
             return
-        time.sleep(1.0)
+        time.sleep(15.0 if ASK_REMOTE else 1.0)
 
 
 if __name__ == "__main__":

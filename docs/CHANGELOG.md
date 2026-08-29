@@ -3,6 +3,8 @@
 ## [2026-08-29] Prompt #13 — otázky i když Mince spí
 
 ### Added
+- Odpovídač: tolerantní čtení JSON z modelu (české uvozovky, kódové ploty), „taťka“ vynuceno i v odpovědích.
+- Odpovídač umí běžet i na Macu (`ASK_REMOTE`, ssh na frontu na martin1) — tam je Claude Code přihlášený Max plánem; launchd agent `deploy/com.jarabot.kocka-ask-worker.plist`. Claude běží v prázdném adresáři, ať netahá cizí CLAUDE.md do kontextu.
 - Když odpovídač neběží, otázka se přesto odešle (`202 queued`, `data/ask/req-*.json` s `queued:true`); worker ji zodpoví, až bude přihlášený, server ji sebere do `data/ask/answers.jsonl` a aplikace ji ukáže: odznak „Mince ti odpověděla · N nové odpovědi“ ve Škole, odpovědi nahoře v chatu s navazujícími otázkami (`GET /api/ask/inbox`, `state.school.seenAnswers`).
 - Název dnešní myšlenky v hlavičce chatu je tlačítko — otevře lekci.
 

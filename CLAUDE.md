@@ -61,7 +61,9 @@ sudo loginctl enable-linger bobek
 journalctl --user -u kocka-ask-worker -f
 ```
 
-Bez běžícího workeru UI hlásí „Mince spí“ (heartbeat starší než 2 min); lekce, kvízy i FAQ fungují dál.
+Bez běžícího workeru UI hlásí „Mince spí“ (heartbeat starší než 2 min); otázky se zařadí do fronty a zodpoví později (inbox). Lekce, kvízy i FAQ fungují dál.
+
+**Druhý odpovídač na Macu (kde je Claude Code přihlášený):** `scripts/ask-worker.py` v režimu `ASK_REMOTE=martin1:/home/bobek/projects/urokova-kocka-mince/data/ask` pracuje s frontou přes ssh. Launchd agent `deploy/com.jarabot.kocka-ask-worker.plist` (`launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/…`), log `~/Library/Logs/kocka-ask-worker.log`. Oba workery mohou běžet zároveň; heartbeat píše jen ten, kterému Claude Code odpovídá.
 
 ## Video
 
