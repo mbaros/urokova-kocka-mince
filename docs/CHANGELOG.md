@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-08-29] Prompt #5 — proklikání a opravy
+
+### Fixed
+- Velké stupně kočky (lvice) měly uříznutou korunku: pravidlo `.cat *{transform-box:fill-box}` měnilo počátek transformace kořenové skupiny SVG → výjimka pro `.root`.
+- Po kliknutí na „Otevři ho na YouTube“ zmizel nouzový blok (re-render schoval `#ytFallback` a časovač se znovu nenastavil) → `ytFailed` flag + re-arm timeoutu při každém načtení.
+- Prázdný odznak titulu se zobrazoval jako pomlčka (`display:inline-block` přebíjel `hidden`) → globální `[hidden]{display:none!important}`.
+- Osa Y grafu skákala na 20k při maximu 10k → jemnější „hezké“ kroky.
+- Odkazy měly výchozí modrou → zlatá dle palety; kratší popisky polí v nastavení; mrknutí/spánek s brýlemi nemačká brýle do čáry.
+
+---
+
 ## [2026-08-29] Prompt #4
 
 ### Added

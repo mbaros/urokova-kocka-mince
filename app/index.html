@@ -38,6 +38,7 @@
 html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--ink);font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+a{color:var(--gold);font-weight:800}
 button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
 .app{max-width:480px;margin:0 auto;padding:16px 16px 96px;min-height:100vh}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 14px}
@@ -77,6 +78,8 @@ h3{font-size:17px}
 .stage.bd-noc .catname,.stage.bd-mesto .catname,.stage.bd-vesmir .catname{color:#F3EEE6}
 .cat{height:auto;overflow:visible;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;transform-origin:50% 92%}
 .cat *{transform-box:fill-box;transform-origin:center}
+.cat .root{transform-box:view-box;transform-origin:0 0}
+[hidden]{display:none!important}
 .cat .head{transform-origin:50% 80%}
 .cat .tail{transform-origin:0% 50%}
 .cat .pawL,.cat .pawR{transform-origin:50% 0%}
@@ -462,11 +465,11 @@ function particles(fx,glyphs,n,opts={}){
 function say(ctx,txt,ms=1600){const b=ctx.bubble;b.textContent=txt;b.classList.add('on');clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove('on'),ms)}
 const q=(ctx,sel)=>ctx.svg.querySelector(sel);
 const EGGS=[
- {id:'wink',min:0,run:c=>{anim(q(c,'.eyeR')||q(c,'.eyes'),[{transform:'scaleY(1)'},{transform:'scaleY(.1)',offset:.4},{transform:'scaleY(.1)',offset:.7},{transform:'scaleY(1)'}],{duration:700});say(c,'😉')}},
+ {id:'wink',min:0,run:c=>{const e=q(c,'.eyeR'),k=e?'.1':'.45';anim(e||q(c,'.eyes'),[{transform:'scaleY(1)'},{transform:`scaleY(${k})`,offset:.4},{transform:`scaleY(${k})`,offset:.7},{transform:'scaleY(1)'}],{duration:700});say(c,'😉')}},
  {id:'purr',min:0,run:c=>{anim(c.svg,[{transform:'translate(0,0)'},{transform:'translate(1px,-1px)'},{transform:'translate(-1px,1px)'},{transform:'translate(0,0)'}],{duration:90,iterations:12});particles(c.fx,['💗','💕'],6);say(c,'prrrr…')}},
  {id:'jump',min:0,run:c=>{anim(c.svg,[{transform:'translateY(0) scale(1,1)'},{transform:'translateY(6px) scale(1.08,.9)',offset:.2},{transform:'translateY(-48px) scale(.95,1.08)',offset:.55},{transform:'translateY(0) scale(1.05,.95)',offset:.9},{transform:'translateY(0) scale(1,1)'}],{duration:800,easing:'cubic-bezier(.2,.8,.2,1)'});say(c,'hop!')}},
  {id:'roll',min:0,run:c=>{anim(c.svg,[{transform:'rotate(0)'},{transform:'rotate(360deg)'}],{duration:900,easing:'cubic-bezier(.4,0,.2,1)'});say(c,'kotrmelec!')}},
- {id:'zzz',min:0,run:c=>{anim(q(c,'.eyes'),[{transform:'scaleY(1)'},{transform:'scaleY(.08)',offset:.15},{transform:'scaleY(.08)',offset:.85},{transform:'scaleY(1)'}],{duration:2600});particles(c.fx,['💤'],3,{top:25});say(c,'chrrr… pšt',2400)}},
+ {id:'zzz',min:0,run:c=>{const k=q(c,'.eyeR')?'.08':'.45';anim(q(c,'.eyes'),[{transform:'scaleY(1)'},{transform:`scaleY(${k})`,offset:.15},{transform:`scaleY(${k})`,offset:.85},{transform:'scaleY(1)'}],{duration:2600});particles(c.fx,['💤'],3,{top:25});say(c,'chrrr… pšt',2400)}},
  {id:'tail',min:0,run:c=>{anim(q(c,'.tail'),[{transform:'rotate(0)'},{transform:'rotate(-28deg)'},{transform:'rotate(18deg)'},{transform:'rotate(0)'}],{duration:450,iterations:4});say(c,'švih švih')}},
  {id:'stretch',min:0,run:c=>{anim(c.svg,[{transform:'scale(1,1)'},{transform:'scale(1.06,.86)',offset:.3},{transform:'scale(.94,1.14)',offset:.7},{transform:'scale(1,1)'}],{duration:1300,easing:'ease-in-out'});say(c,'áááách')}},
  {id:'sneeze',min:0,run:c=>{anim(q(c,'.head'),[{transform:'rotate(0)'},{transform:'rotate(-14deg)',offset:.45},{transform:'rotate(22deg)',offset:.6},{transform:'rotate(0)'}],{duration:700});setTimeout(()=>particles(c.fx,['💦'],4,{top:40}),380);say(c,'Hep-ČÍ!')}},
@@ -550,12 +553,14 @@ function render(){
 
 /* ============ CHECK-IN (YouTube embed + fallback) ============ */
 function ytId(url){const m=String(url||'').match(/(?:youtu\.be\/|v=|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{11})/);return m?m[1]:null}
-let ytPlayer=null, ytReadyCbs=[];
+let ytPlayer=null, ytReadyCbs=[], ytFailed=false;
+function showFallback(){ytFailed=true;const el=$('ytFallback');if(el)el.hidden=false}
 function loadYT(cb){
   if(window.YT&&YT.Player)return cb();
+  if(ytFailed){showFallback();return}
   ytReadyCbs.push(cb);
-  if(!document.getElementById('ytapi')){const s=document.createElement('script');s.id='ytapi';s.src='https://www.youtube.com/iframe_api';s.onerror=()=>{ytReadyCbs=[];const el=$('ytFallback');if(el)el.hidden=false};document.head.appendChild(s);
-    setTimeout(()=>{if(!(window.YT&&YT.Player)){const el=$('ytFallback');if(el)el.hidden=false}},6000)}
+  if(!document.getElementById('ytapi')){const s=document.createElement('script');s.id='ytapi';s.src='https://www.youtube.com/iframe_api';s.onerror=showFallback;document.head.appendChild(s)}
+  clearTimeout(window._ytTimeout);window._ytTimeout=setTimeout(()=>{if(!(window.YT&&YT.Player))showFallback()},6000);
 }
 window.onYouTubeIframeAPIReady=()=>{const cbs=ytReadyCbs;ytReadyCbs=[];cbs.forEach(f=>f())};
 const parseMmss=v=>{const m=String(v||'').trim().match(/^(\d+):(\d{1,2})$/);if(m)return +m[1]*60+ +m[2];const n=parseInt(v,10);return isNaN(n)?0:n};
@@ -584,7 +589,7 @@ function renderCheckin(){
   ${url?levelHtml():''}
   ${id?`<div class="player"><div id="ytPlayer"></div></div>`:''}
   ${url&&!id?`<a class="btn ghost" href="${esc(url)}" target="_blank" rel="noopener" id="playBtn" data-testid="play-video" style="margin-top:10px">▶ Spustit video</a>`:''}
-  <div id="ytFallback" ${id?'hidden':''}>${id?`<p class="small" style="margin:8px 0">Video se tu nechce přehrát? <a href="${esc(lvl==='basic'&&bs?'https://www.youtube.com/watch?v='+id+'&t='+bs+'s':url)}" target="_blank" rel="noopener" id="playBtn2">Otevři ho na YouTube</a> a pak se vrať.</p>`:''}
+  <div id="ytFallback" ${id&&!ytFailed?'hidden':''}>${id?`<p class="small" style="margin:8px 0">Video se tu nechce přehrát? <a href="${esc(lvl==='basic'&&bs?'https://www.youtube.com/watch?v='+id+'&t='+bs+'s':url)}" target="_blank" rel="noopener" id="playBtn2">Otevři ho na YouTube</a> a pak se vrať.</p>`:''}
     <p class="small" style="margin:8px 0" id="fbNote">${ready?'':`Nouzové tlačítko se odemkne za <b id="cnt">${mmss(left)}</b>.`}</p>
     <button class="btn gold" id="doneBtn" data-testid="checkin-done" ${ready?'':'disabled'}>🪙 Mám hotovo — připsat ${kc(DEP(),0)} + úrok</button>
   </div>`;
@@ -602,7 +607,7 @@ function mountPlayer(id,t){
   const start=S.level==='advanced'?0:(S.settings.basicStart||0);
   loadYT(()=>{if(!$('ytPlayer'))return;try{ytPlayer=new YT.Player('ytPlayer',{videoId:id,playerVars:{rel:0,modestbranding:1,playsinline:1,start},events:{
       onStateChange:e=>{if(!t)return;if(e.data===YT.PlayerState.PLAYING){markVideoStarted(t);const n=$('fbNote');if(n&&!$('cnt'))renderFallbackTimer(t)} if(e.data===YT.PlayerState.ENDED&&!S.checkins.some(c=>c.date===todayStr()))doCheckin('video')},
-      onError:()=>{const el=$('ytFallback');if(el)el.hidden=false}}})}catch(e){const el=$('ytFallback');if(el)el.hidden=false}})
+      onError:showFallback}})}catch(e){showFallback()}})
 }
 function renderFallbackTimer(t){ // show the emergency button countdown once the video is playing
   const started=S.videoStartedAt, need=S.settings.minMinutes*60000, n=$('fbNote'); if(!n)return;
@@ -684,7 +689,7 @@ function drawChart(){
   const actual=S.checkins.map(c=>S.withdrawals.some(w=>w.afterN===c.n)?0:c.after);
   const proj=project(balance(),n-k);
   const deps=Array.from({length:n},(_,i)=>(i+1)*DEP());
-  const all=[...actual,...proj], raw=Math.max(...all,...deps,100)*1.05, mag=Math.pow(10,Math.floor(Math.log10(raw/4))), stepN=[1,2,2.5,5,10].map(m=>m*mag).find(s=>s*4>=raw), ymax=stepN*4;
+  const all=[...actual,...proj], raw=Math.max(...all,...deps,100)*1.05, mag=Math.pow(10,Math.floor(Math.log10(raw/4))), stepN=[1,1.5,2,2.5,3,4,5,6,8,10].map(m=>m*mag).find(s=>s*4>=raw), ymax=stepN*4;
   const pad={l:44,r:12,t:12,b:26}, x=i=>pad.l+(i/(n-1))*(W-pad.l-pad.r), y=v=>H-pad.b-(v/ymax)*(H-pad.t-pad.b);
   g.strokeStyle=col('--line');g.lineWidth=1;g.font='700 11px Nunito, sans-serif';g.fillStyle=col('--muted');g.textAlign='right';
   for(let i=0;i<=4;i++){const v=ymax/4*i;g.beginPath();g.moveTo(pad.l,y(v));g.lineTo(W-pad.r,y(v));g.stroke();g.fillText(v>=1000?(v/1000).toLocaleString('cs-CZ',{maximumFractionDigits:1})+'k':Math.round(v),pad.l-6,y(v)+4)}
@@ -727,7 +732,7 @@ function openSettings(){
   const s=S.settings;
   openSheet(`<div class="eyebrow">Pro rodiče</div><h2 style="margin-top:6px">Nastavení výzvy</h2>
   <div class="field" style="margin-top:14px"><label>Odkaz na priming video (YouTube se přehraje přímo tady)</label><input id="fUrl" value="${esc(s.videoUrl)}" placeholder="https://youtu.be/…"></div>
-  <div class="row"><div class="field"><label>Start výzvy</label><input id="fStart" type="date" value="${esc(s.startDate)}"></div><div class="field"><label>Základní level od (m:ss)</label><input id="fBasic" value="${mmss((s.basicStart||0)*1000)}" placeholder="2:30"></div><div class="field"><label>Nouzové tl. po (min)</label><input id="fMin" type="number" min="0" value="${s.minMinutes}"></div></div>
+  <div class="row"><div class="field"><label>Start výzvy</label><input id="fStart" type="date" value="${esc(s.startDate)}"></div><div class="field"><label>Základní od (m:ss)</label><input id="fBasic" value="${mmss((s.basicStart||0)*1000)}" placeholder="2:30"></div><div class="field"><label>Nouzové po (min)</label><input id="fMin" type="number" min="0" value="${s.minMinutes}"></div></div>
   <div class="row"><div class="field"><label>Jméno kočky</label><input id="fCat" value="${esc(s.catName)}"></div><div class="field"><label>Nový PIN (prázdné = beze změny)</label><input id="fPin" inputmode="numeric" maxlength="4" placeholder="••••"></div></div>
   <div class="row"><div class="field"><label>Cílová částka Kč</label><input id="fTarget" type="number" value="${s.target}"></div><div class="field"><label>Úrok % / den</label><input id="fRate" type="number" step="0.1" value="${s.rate*100}"></div><div class="field"><label>Dní</label><input id="fDays" type="number" value="${s.days}"></div></div>
   <p class="small" id="calc" style="margin:-4px 0 12px"></p>
