@@ -2,6 +2,9 @@
 
 ## [2026-08-29] Prompt #12
 
+### Changed
+- V textech pro Terezku „taťka“ místo „táta“ (aplikace, lekce, FAQ nabídky, persona odpovídače).
+
 ### Fixed
 - Chat se spící Mincí: navrhované otázky šly klepnout, ale nic se nedělo → při spánku se schovají, vstup se zamkne, klepnutí řekne proč; 503 z API se ukáže jako spánek.
 

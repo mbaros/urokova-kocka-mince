@@ -87,6 +87,7 @@ ssh martin1 ~/projects/urokova-kocka-mince/deploy/deploy.sh
 - Výchozí PIN rodiče je `1234` — změnit v nastavení hned po nasazení.
 - `bin/e2e-smoke` startuje server s `ASK_MOCK=1`; chat v testech dostává zkušební odpověď, worker není potřeba. `PUT /api/ask/mock {asleep:true}` (jen v mock režimu) simuluje spícího odpovídače.
 - **Před každým nasazením**: `bin/e2e-smoke` zelené (hlídá i pre-push hook) + ruční proklik změněné obrazovky v prohlížeči (Playwright na Macu proti produkční URL, `tests/prod-check.cjs` vzor v historii).
+- **Copy pro Terezku**: o otci vždy „taťka“, nikdy „táta“ (i v persona promptu odpovídače).
 - Lekce v `app/lessons.js` jsou číslované 1–100 a testy počítají s konkrétními tituly (1 „Co jsou vlastně peníze“, 7 „Kam mizí drobné“, kvíz 5 odpověď C).
 
 ## Interní cesty / endpointy
