@@ -56,7 +56,8 @@ graph TB
 | PUT | `/api/state` | body `{state, events:[{type,payload}]}` → atomický zápis `state.json`, append do `events.jsonl`; 413 nad 512 kB; 422 při špatném tvaru |
 | GET | `/api/events?limit=200` | poslední eventy z logu |
 | GET | `/api/ask/status` | `{alive, askedToday, limit, mock}` — `alive` = heartbeat workeru < 120 s |
-| POST | `/api/ask` | `{question, lessonN?, lessonTitle?, lessonText?, history[≤6], kid, cat}` → `{answer, followups[≤3], askedToday, limit}`; 429 limit, 503 worker spí, 504 timeout |
+| GET | `/api/ask/inbox` | odpovědi na otázky položené během spánku (`answers.jsonl`) + počet čekajících |
+| POST | `/api/ask` | `{question, lessonN?, lessonTitle?, lessonText?, history[≤6], kid, cat}` → `{answer, followups[≤3], askedToday, limit}`; 429 limit, 202 `{queued:true}` když worker spí (zodpoví později → inbox), 504 timeout |
 | GET | `/` | `app/index.html` (`Cache-Control: no-cache`) |
 
 ## Stav (state.json)

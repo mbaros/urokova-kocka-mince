@@ -151,7 +151,7 @@ test.describe('Úroková kočka smoke', () => {
     await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.school.asked).toBe(2);
   });
 
-  test('when the answerer sleeps, the chat says so and the suggested questions do nothing harmful', async ({ page }) => {
+  test('when the answerer sleeps, a question is kept and answered into the inbox once she wakes', async ({ page }) => {
     await page.request.put('/api/ask/mock', { data: { asleep: true } });
     try {
       await seed(page, stateWith(3));
@@ -159,19 +159,28 @@ test.describe('Úroková kočka smoke', () => {
       await page.getByTestId('tab-school').click();
       await page.getByTestId('ask-open').click();
       await expect(page.getByTestId('chat-asleep')).toBeVisible();
-      await expect(page.locator('#chips button')).toHaveCount(0);
-      await expect(page.getByTestId('ask-input')).toBeDisabled();
-      // API agrees
-      expect((await page.request.post('/api/ask', { data: { question: 'Ahoj?' } })).status()).toBe(503);
+      await expect(page.getByTestId('ask-input')).toBeEnabled();
+      // the lesson title in the header opens the lesson
+      await expect(page.getByTestId('chat-lesson')).toContainText('Zaplať nejdřív sobě');
+      await page.getByTestId('ask-input').fill('Proč mají peníze hodnotu?');
+      await page.getByTestId('ask-send').click();
+      await expect(page.getByTestId('queued')).toBeVisible();
+      expect((await page.request.post('/api/ask', { data: { question: 'Ahoj?' } })).status()).toBe(202);
+      await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.school?.asked).toBe(1);
     } finally {
-      await page.request.put('/api/ask/mock', { data: { asleep: false } });
+      await page.request.put('/api/ask/mock', { data: { asleep: false } }); // wakes up and answers the queue
     }
-    // and once awake, the same chat works again after reopening
     await page.locator('#sheet').getByRole('button', { name: 'Zavřít' }).click();
+    await page.reload();
+    await page.getByTestId('tab-school').click();
+    await expect(page.getByTestId('inbox-badge')).toContainText('2 nové odpovědi');
     await page.getByTestId('ask-open').click();
-    await expect(page.locator('#chips button')).toHaveCount(2); // the lesson's two starter questions
-    await page.locator('#chips button').first().click();
-    await expect(page.locator('#chatLog .msg.cat')).toContainText('zkušební odpověď');
+    await expect(page.getByTestId('inbox-answer')).toHaveCount(2);
+    await expect(page.locator('#chatLog')).toContainText('Proč mají peníze hodnotu?');
+    await expect(page.locator('#chips button')).toHaveCount(3); // follow-ups of the last answer
+    // seen → badge gone
+    await page.locator('#sheet').getByRole('button', { name: 'Zavřít' }).click();
+    await expect(page.getByTestId('inbox-badge')).toHaveCount(0);
   });
 
   test('the withdrawal offer explains both choices in a FAQ', async ({ page }) => {

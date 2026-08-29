@@ -101,7 +101,7 @@ def handle_pending() -> int:
             req = json.loads(req_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             continue
-        if time.time() - req_path.stat().st_mtime > 300:  # stale — the server gave up long ago
+        if not req.get("queued") and time.time() - req_path.stat().st_mtime > 300:  # stale live request — the server gave up
             req_path.unlink(missing_ok=True)
             continue
         result = answer(req)

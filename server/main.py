@@ -42,6 +42,7 @@ VIDEO_FILE = "priming.mp4"
 ASK_DIR = DATA_DIR / "ask"
 ASK_LOG = ASK_DIR / "log.jsonl"
 ASK_HEARTBEAT = ASK_DIR / "worker.heartbeat"
+ASK_ANSWERS = ASK_DIR / "answers.jsonl"      # answers to questions asked while the worker slept
 ASK_MOCK = os.environ.get("ASK_MOCK", "") == "1"
 ASK_DAILY_LIMIT = int(os.environ.get("ASK_DAILY_LIMIT", "25"))
 ASK_TIMEOUT_S = int(os.environ.get("ASK_TIMEOUT_S", "90"))
@@ -174,6 +175,14 @@ def ask_mock(body: MockBody) -> dict[str, Any]:
     if not ASK_MOCK:
         raise HTTPException(status_code=404)
     _mock_asleep = body.asleep
+    if not _mock_asleep:
+        for req_path in sorted(ASK_DIR.glob("req-*.json")):
+            try:
+                req = json.loads(req_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            _write_atomic(ASK_DIR / req_path.name.replace("req-", "res-", 1), json.dumps(_mock_answer(req["question"]), ensure_ascii=False))
+        _collect_queued()
     return {"asleep": _mock_asleep}
 
 
@@ -186,6 +195,61 @@ def ask_status() -> dict[str, Any]:
     return {"alive": _alive(), "askedToday": _asks_today(), "limit": ASK_DAILY_LIMIT, "mock": ASK_MOCK}
 
 
+def _mock_answer(question: str) -> dict[str, Any]:
+    return {
+        "answer": f"(zkušební odpověď) Ptáš se: „{question}“. Krátká verze: čas násobí víc než částka.",
+        "followups": ["A co inflace?", "Kde seženu vyšší úrok?", "Jak to spočítám?"],
+    }
+
+
+def _log_ask(started: str, req_id: str, lesson_n: int | None, q: str, answer: str, followups: list[str]) -> None:
+    try:
+        with ASK_LOG.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps({"at": started, "id": req_id, "lessonN": lesson_n, "q": q, "a": answer, "followups": followups}, ensure_ascii=False) + "\n")
+    except OSError:
+        pass
+
+
+def _collect_queued() -> None:
+    """Move answered *queued* requests (asked while asleep) into answers.jsonl."""
+    for res_path in sorted(ASK_DIR.glob("res-*.json")):
+        req_path = ASK_DIR / res_path.name.replace("res-", "req-", 1)
+        try:
+            req = json.loads(req_path.read_text(encoding="utf-8")) if req_path.exists() else None
+            if not req or not req.get("queued"):
+                continue
+            res = json.loads(res_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        answer = str(res.get("answer", "")).strip()[:2000]
+        followups = [str(f).strip()[:120] for f in (res.get("followups") or []) if str(f).strip()][:3]
+        if answer and not res.get("error"):
+            entry = {"id": req["id"], "askedAt": req["at"], "answeredAt": _now(), "lessonN": req.get("lessonN"), "q": req["question"], "a": answer, "followups": followups}
+            with ASK_ANSWERS.open("a", encoding="utf-8") as fh:
+                fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        for p in (req_path, res_path):
+            try:
+                p.unlink()
+            except OSError:
+                pass
+
+
+@app.get("/api/ask/inbox")
+def ask_inbox(limit: int = 30) -> dict[str, Any]:
+    """Answers to questions asked while Mince slept, oldest first; plus how many still wait."""
+    ASK_DIR.mkdir(parents=True, exist_ok=True)
+    _collect_queued()
+    answers = []
+    if ASK_ANSWERS.exists():
+        for line in ASK_ANSWERS.read_text(encoding="utf-8").splitlines()[-limit:]:
+            try:
+                answers.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+    waiting = sum(1 for p in ASK_DIR.glob("req-*.json") if not (ASK_DIR / p.name.replace("req-", "res-", 1)).exists())
+    return {"answers": answers, "waiting": waiting}
+
+
 @app.post("/api/ask")
 async def ask(body: AskBody) -> dict[str, Any]:
     ASK_DIR.mkdir(parents=True, exist_ok=True)
@@ -195,12 +259,13 @@ async def ask(body: AskBody) -> dict[str, Any]:
     req_id = f"{int(time.time())}-{secrets.token_hex(4)}"
     started = _now()
     if not _alive():
-        raise HTTPException(status_code=503, detail="Mince zrovna spí (odpovídač neběží). Zkus to za chvíli.")
+        # Mince sleeps: keep the question, the worker answers later, the app picks it up from /api/ask/inbox.
+        req = {"id": req_id, "at": started, "queued": True, **body.model_dump()}
+        _write_atomic(ASK_DIR / f"req-{req_id}.json", json.dumps(req, ensure_ascii=False))
+        _log_ask(started, req_id, body.lessonN, body.question, "", [])
+        return JSONResponse({"queued": True, "id": req_id, "askedToday": used + 1, "limit": ASK_DAILY_LIMIT}, status_code=202)
     if ASK_MOCK:
-        result = {
-            "answer": f"(zkušební odpověď) Ptáš se: „{body.question}“. Krátká verze: čas násobí víc než částka.",
-            "followups": ["A co inflace?", "Kde seženu vyšší úrok?", "Jak to spočítám?"],
-        }
+        result = _mock_answer(body.question)
     else:
         req = {"id": req_id, "at": started, **body.model_dump()}
         _write_atomic(ASK_DIR / f"req-{req_id}.json", json.dumps(req, ensure_ascii=False))
@@ -229,11 +294,7 @@ async def ask(body: AskBody) -> dict[str, Any]:
     followups = [str(f).strip()[:120] for f in (result.get("followups") or []) if str(f).strip()][:3]
     if not answer:
         raise HTTPException(status_code=502, detail="Mince neodpověděla.")
-    try:
-        with ASK_LOG.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps({"at": started, "id": req_id, "lessonN": body.lessonN, "q": body.question, "a": answer, "followups": followups}, ensure_ascii=False) + "\n")
-    except OSError:
-        pass
+    _log_ask(started, req_id, body.lessonN, body.question, answer, followups)
     return {"answer": answer, "followups": followups, "askedToday": used + 1, "limit": ASK_DAILY_LIMIT}
 
 

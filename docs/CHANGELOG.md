@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-08-29] Prompt #13 — otázky i když Mince spí
+
+### Added
+- Když odpovídač neběží, otázka se přesto odešle (`202 queued`, `data/ask/req-*.json` s `queued:true`); worker ji zodpoví, až bude přihlášený, server ji sebere do `data/ask/answers.jsonl` a aplikace ji ukáže: odznak „Mince ti odpověděla · N nové odpovědi“ ve Škole, odpovědi nahoře v chatu s navazujícími otázkami (`GET /api/ask/inbox`, `state.school.seenAnswers`).
+- Název dnešní myšlenky v hlavičce chatu je tlačítko — otevře lekci.
+
+---
+
 ## [2026-08-29] Prompt #12
 
 ### Changed

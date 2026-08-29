@@ -386,7 +386,7 @@ const DEFAULTS={
   videoStartedFor:null,
   level:'basic',       // 'basic' = video od basicStart do konce · 'advanced' = celé video
   tutorialDone:false,
-  school:{read:[],quiz:{},asked:0}   // Mincina škola: přečtené myšlenky, odpovědi na kvízy {n:{pick,ok}}, počet otázek
+  school:{read:[],quiz:{},asked:0,seenAnswers:[]}   // Mincina škola: přečtené myšlenky, odpovědi na kvízy {n:{pick,ok}}, počet otázek
 };
 let S=loadLocal();
 function normalize(o){return {...structuredClone(DEFAULTS),...o,settings:{...DEFAULTS.settings,...(o.settings||{})},school:{...DEFAULTS.school,...(o.school||{})}}}
@@ -790,6 +790,7 @@ function renderSchool(){
   $('schoolHead').innerHTML=`${catSVG().replace(/style="width:[^"]*"/,'style="width:96px"')}<div style="flex:1;min-width:0"><div class="eyebrow">Mincina škola</div><h2>${t[1]}</h2><div class="small">${st} ⭐${nt?` · do titulu ${nt[1]} zbývá ${nt[0]-st}`:' · nejvyšší titul'}</div><div class="progress" style="margin:8px 0 0"><i style="width:${nt?Math.round((st-t[0])/(nt[0]-t[0])*100):100}%"></i></div></div>`;
   const okq=Object.values(S.school.quiz).filter(q=>q.ok).length, nq=Object.keys(S.school.quiz).length;
   $('schoolTiles').innerHTML=`<div class="tile"><div class="v num">${S.school.read.length}</div><div class="l">myšlenek</div></div><div class="tile"><div class="v num">${okq}/${nq}</div><div class="l">kvízů správně</div></div><div class="tile"><div class="v num">${S.school.asked}</div><div class="l">otázek</div></div>`;
+  const nu=unreadAnswers().length; $('askOpenBtn').innerHTML=nu?`💬 Mince ti odpověděla <span class="chapter" style="border-color:var(--gold);color:var(--gold)" data-testid="inbox-badge">${nu} ${plural(nu,'nová odpověď','nové odpovědi','nových odpovědí')}</span>`:'💬 Zeptej se Mince na cokoli o penězích';
   $('chapters').innerHTML=CHAPTERS.map(c=>{const to=c.from+9, got=LESSONS.filter(l=>l.n>=c.from&&l.n<=to&&lessonUnlocked(l.n)).length, state=got>=10?'done':got>0?'now':'lock';
     return `<div><div class="chap ${state}" data-ch="${c.n}" data-testid="chapter-${c.n}"><div class="n">${state==='done'?'✓':c.n}</div><div style="flex:1"><b>${c.name}</b><span>${state==='lock'?'odemkne se dnem '+c.from:got+' / 10 myšlenek'}</span></div>${state==='now'?'<span class="chapter" style="border-color:var(--gold);color:var(--gold)">teď</span>':''}</div><div class="lessonlist" id="ch${c.n}" hidden>${LESSONS.filter(l=>l.n>=c.from&&l.n<=to&&lessonUnlocked(l.n)).map(l=>`<button data-open="${l.n}"><small>${l.n}</small>${l.t}${S.school.read.includes(l.n)?'':' <span class="chapter" style="margin-left:auto">nové</span>'}${l.quiz?(S.school.quiz[l.n]?(S.school.quiz[l.n].ok?' ✓':' ✗'):' 🧠'):''}</button>`).join('')}</div></div>`}).join('');
   $('chapters').querySelectorAll('.chap:not(.lock)').forEach(e=>e.addEventListener('click',()=>{const l=$('ch'+e.dataset.ch);l.hidden=!l.hidden}));
@@ -798,11 +799,14 @@ function renderSchool(){
 $('askOpenBtn').addEventListener('click',()=>openChat(LESSONS[Math.max(0,Math.min(S.checkins.length,LESSONS.length)-1)]||null));
 
 /* ============ ZEPTEJ SE MINCE — chat přes /api/ask ============ */
-let chat={history:[],lesson:null};
+let chat={history:[],lesson:null}, inbox={answers:[],waiting:0};
+async function loadInbox(){try{const r=await fetch(api('ask/inbox'),{cache:'no-store'});if(r.ok)inbox=await r.json()}catch(e){}return inbox}
+function unreadAnswers(){const seen=S.school.seenAnswers||[];return inbox.answers.filter(a=>!seen.includes(a.id))}
+function answerHtml(a,isNew){return `<div class="msg me">${esc(a.q)}</div><div class="msg cat" data-testid="inbox-answer">${isNew?'<b>Probudila jsem se a odpovídám:</b><br>':''}${esc(a.a).replace(/\n/g,'<br>')}</div>`}
 async function openChat(lesson){
   chat={history:[],lesson};
   openSheet(`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>💬 Zeptej se Mince</h2><span class="chapter" id="askQuota">…</span></div>
-    <p class="small" style="margin:4px 0 0">${lesson?`K dnešní myšlence „${lesson.t}“ — nebo na cokoli jiného o penězích.`:'Na cokoli o penězích, spoření, úrocích nebo podvodech.'}</p>
+    <p class="small" style="margin:4px 0 0">${lesson&&LESSONS[lesson.n-1]===lesson?`K dnešní myšlence <button class="chapter" id="chatLessonBtn" data-testid="chat-lesson" style="cursor:pointer">📖 ${esc(lesson.t)}</button> — nebo na cokoli jiného o penězích.`:lesson?`K tématu „${esc(lesson.t)}“ — nebo na cokoli jiného o penězích.`:'Na cokoli o penězích, spoření, úrocích nebo podvodech.'}</p>
     <div class="chat" id="chatLog" data-testid="chat"></div>
     <div class="chips" id="chips"></div>
     <div class="askrow"><input id="askIn" data-testid="ask-input" placeholder="Napiš otázku…" maxlength="400" autocomplete="off"><button id="askSend" data-testid="ask-send">➤</button></div>
@@ -810,15 +814,21 @@ async function openChat(lesson){
     renderChips(lesson?lesson.ask:['Co je úrok z úroku?','Jak si udělat rozpočet?','Jak poznám podvod?']);
     $('askSend').onclick=()=>sendAsk($('askIn').value);
     $('askIn').addEventListener('keydown',e=>{if(e.key==='Enter')sendAsk($('askIn').value)});
+    const lb=$('chatLessonBtn');if(lb)lb.onclick=()=>{closeSheet();openLesson(lesson)};
+    // answers to questions asked while she slept
+    await loadInbox(); const fresh=unreadAnswers();
+    if(fresh.length){$('chatLog').innerHTML=fresh.map(a=>answerHtml(a,true)).join('');S.school.seenAnswers=[...(S.school.seenAnswers||[]),...fresh.map(a=>a.id)];save();renderSchool();const last=fresh[fresh.length-1];if(last.followups?.length)renderChips(last.followups)}
+    if(inbox.waiting)$('chatLog').insertAdjacentHTML('beforeend',`<div class="msg cat" data-testid="inbox-waiting">${inbox.waiting===1?'Jednu tvoji otázku':inbox.waiting+' tvoje otázky'} mám ještě u sebe — odpovím, až se probudím. 💤</div>`);
     try{const r=await fetch(api('ask/status'),{cache:'no-store'});const j=await r.json();$('askQuota').textContent=`dnes ${j.askedToday} z ${j.limit}`;
       if(!j.alive)chatAsleep();
     }catch(e){$('askQuota').textContent='offline'}
   });
 }
-function chatAsleep(){chat.asleep=true;$('chatLog').innerHTML=`<div class="msg cat" data-testid="chat-asleep">Zzz… zrovna spím a nemůžu odpovídat. Zkus to za chvíli — nebo se zeptej taťky. 😴</div>`;$('chips').innerHTML='';$('askIn').disabled=true;$('askIn').placeholder='Mince spí…';$('askSend').disabled=true}
+// Mince sleeps (no answerer): questions still go through, they are answered later and land in the inbox.
+function chatAsleep(){chat.asleep=true;if(!$('chatLog').querySelector('[data-testid=chat-asleep]'))$('chatLog').insertAdjacentHTML('beforeend',`<div class="msg cat" data-testid="chat-asleep">Zzz… zrovna spím. Klidně se ptej — odpovím ti, až se probudím, a najdeš to tady. 😴</div>`);$('askIn').placeholder='Napiš otázku, odpovím později…'}
 function renderChips(list){$('chips').innerHTML=(list||[]).map(q=>`<button data-q="${esc(q)}">${esc(q)}</button>`).join('');$('chips').querySelectorAll('button').forEach(b=>b.onclick=()=>sendAsk(b.dataset.q))}
 async function sendAsk(q){
-  q=(q||'').trim(); if(!q)return; const log=$('chatLog'), inp=$('askIn'), btn=$('askSend'); if(chat.asleep){toast('Mince zrovna spí — zkus to později.');return} if(btn.disabled)return;
+  q=(q||'').trim(); if(!q)return; const log=$('chatLog'), inp=$('askIn'), btn=$('askSend'); if(btn.disabled)return;
   inp.value=''; btn.disabled=true; inp.disabled=true; $('chips').innerHTML='';
   log.insertAdjacentHTML('beforeend',`<div class="msg me">${esc(q)}</div><div class="thinking" id="thinking"><i></i><i></i><i></i> Mince přemýšlí…</div>`); log.scrollTop=log.scrollHeight;
   try{
@@ -826,7 +836,8 @@ async function sendAsk(q){
     if(chat.lesson){body.lessonN=chat.lesson.n;body.lessonTitle=chat.lesson.t;body.lessonText=chat.lesson.p}
     const r=await fetch(api('ask'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
     const j=await r.json(); $('thinking')?.remove();
-    if(r.status===503){chatAsleep();return}
+    if(r.status===202){S.school.asked++;save([{type:'ask',n:chat.lesson?chat.lesson.n:null,q,queued:true}]);log.insertAdjacentHTML('beforeend',`<div class="msg cat" data-testid="queued">Mám to u sebe. Odpovím, až se probudím — koukni sem zítra. 💤</div>`);$('askQuota').textContent=`dnes ${j.askedToday} z ${j.limit}`;btn.disabled=false;inp.disabled=false;return}
+    if(r.status===503){chatAsleep();btn.disabled=false;inp.disabled=false;return}
     if(!r.ok)throw new Error(j.detail||('HTTP '+r.status));
     chat.history.push({q,a:j.answer}); S.school.asked++; save([{type:'ask',n:chat.lesson?chat.lesson.n:null,q}]);
     log.insertAdjacentHTML('beforeend',`<div class="msg cat">${esc(j.answer).replace(/\n/g,'<br>')}</div>`); renderChips(j.followups);
@@ -984,7 +995,7 @@ window.tutorial=tutorial;
 /* ============ BOOT ============ */
 window.closeSheet=closeSheet;
 render();
-pullSync().then(()=>{if(!S.tutorialDone&&!$('overlay').classList.contains('on'))tutorial()});
+pullSync().then(async()=>{if(!S.tutorialDone&&!$('overlay').classList.contains('on'))tutorial();await loadInbox();renderSchool()});
 window.addEventListener('resize',()=>{if(tab==='chart')drawChart()});
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>drawChart());
 </script>
