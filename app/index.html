@@ -147,6 +147,14 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 .sheet{background:var(--surface);color:var(--ink);border-radius:26px;max-width:460px;width:100%;padding:22px 20px 20px;box-shadow:var(--shadow);animation:up .35s cubic-bezier(.2,.8,.2,1);max-height:92vh;overflow:auto}
 @keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 .sheet.center{text-align:center}
+.tut-dots{display:flex;gap:6px;justify-content:center;margin-top:14px}
+.tut-dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.tut-dots i.on{background:var(--gold);width:22px;border-radius:999px}
+.tut-ic{font-size:56px;line-height:1;margin:6px 0 10px}
+.tut-demo{display:flex;gap:8px;justify-content:center;margin:14px 0 4px}
+.tut-demo>div{flex:1;background:var(--surface2);border-radius:14px;padding:10px 6px}
+.tut-demo .v{font-family:"Fredoka";font-weight:700;font-size:19px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tut-demo .l{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
 .bigday{font-family:"Fredoka";font-weight:700;font-size:64px;line-height:1;margin:6px 0 2px;background:linear-gradient(90deg,var(--gold),var(--coral));-webkit-background-clip:text;background-clip:text;color:transparent}
 .gain{display:flex;gap:10px;margin:14px 0}
 .gain>div{flex:1;background:var(--surface2);border-radius:16px;padding:12px}
@@ -311,7 +319,8 @@ const DEFAULTS={
   claimed:[],           // reward ids the user has seen the reward screen for
   videoStartedAt:null,
   videoStartedFor:null,
-  level:'basic'        // 'basic' = video od basicStart do konce · 'advanced' = celé video
+  level:'basic',       // 'basic' = video od basicStart do konce · 'advanced' = celé video
+  tutorialDone:false
 };
 let S=loadLocal();
 function normalize(o){return {...structuredClone(DEFAULTS),...o,settings:{...DEFAULTS.settings,...(o.settings||{})}}}
@@ -715,8 +724,8 @@ $('whatIf').addEventListener('input',whatIf);
 
 /* ============ SHEET / TABS / CONFETTI ============ */
 function openSheet(html,after){const s=$('sheet');s.classList.remove('center');s.innerHTML=html;$('overlay').classList.add('on');if(after)after()}
-function closeSheet(){$('overlay').classList.remove('on')}
-$('overlay').addEventListener('click',e=>{if(e.target===$('overlay')&&!$('sheetNext'))closeSheet()});
+function closeSheet(){$('overlay').classList.remove('on');$('sheet').innerHTML=''}
+$('overlay').addEventListener('click',e=>{if(e.target===$('overlay')&&!$('sheetNext')&&!$('tutNext'))closeSheet()});
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.tab;document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+tab));if(tab==='chart')drawChart();window.scrollTo({top:0})}));
 function confetti(n){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const cv=$('confetti'),dpr=devicePixelRatio||1;cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);
   const cols=['#F5C451','#7EE0B8','#FF7A6B','#A996FF','#FFFFFF'];const ps=Array.from({length:n},()=>({x:innerWidth/2+(Math.random()-.5)*160,y:innerHeight*0.4,vx:(Math.random()-.5)*10,vy:-Math.random()*12-4,c:cols[Math.random()*cols.length|0],r:Math.random()*6+3,a:Math.random()*6,s:(Math.random()-.5)*.3}));
@@ -742,21 +751,46 @@ function openSettings(){
   <p class="small" style="margin:6px 0 10px">Průběh se ukládá na server (a jako záloha do tohohle prohlížeče). Testovací dny přidávej klidně — „Smazat vše“ pak začne od nuly.</p>
   <div class="row"><button class="btn ghost" id="simBtn" data-testid="settings-sim-day">+ Přidat testovací den</button><button class="btn ghost" id="undoBtn">− Odebrat poslední den</button></div>
   <div class="field" style="margin-top:10px"><label>Záloha (zkopíruj / vlož)</label><textarea id="backup" rows="3" style="font-size:11px">${esc(btoa(unescape(encodeURIComponent(JSON.stringify(S)))))}</textarea></div>
-  <div class="row"><button class="btn ghost" id="restoreBtn">Obnovit ze zálohy</button><button class="btn coral" id="resetBtn">Smazat vše</button></div>`,()=>{
+  <div class="row" style="margin-top:10px"><button class="btn ghost" id="restoreBtn">Obnovit ze zálohy</button><button class="btn coral" id="resetBtn">Smazat vše</button></div>
+  <button class="btn ghost" id="tutBtn" data-testid="settings-tutorial" style="margin-top:10px">▶ Pustit úvodní návod znovu</button>`,()=>{
     const upd=()=>{const t=+$('fTarget').value,r=+$('fRate').value/100,d=+$('fDays').value;const dep=Math.max(1,Math.ceil(derivedDeposit(t,r,d)-1e-9));const fin=project(0,d,r,dep).pop();$('calc').textContent=`→ denní vklad ${kc(dep,0)}, po ${d} dnech ≈ ${kc(fin,0)} (vklady ${kc(dep*d,0)}, úroky ${kc(fin-dep*d,0)}). Nabídky na dni ${Math.round(d/3)} a ${Math.round(d/3)*2}.`;return {t,r,d,dep}};
     ['fTarget','fRate','fDays'].forEach(id=>$(id).addEventListener('input',upd));upd();
     $('saveSet').onclick=()=>{const {t,r,d,dep}=upd();Object.assign(S.settings,{videoUrl:$('fUrl').value.trim(),startDate:$('fStart').value||s.startDate,basicStart:parseMmss($('fBasic').value),minMinutes:+$('fMin').value||0,catName:$('fCat').value.trim()||'Mince',target:t,rate:r,days:d,deposit:dep,offerDays:[Math.round(d/3),Math.round(d/3)*2]});const p=$('fPin').value.trim();if(/^\d{4}$/.test(p))S.settings.pin=p;recompute();save([{type:'settings',target:t,rate:r,days:d,deposit:dep,startDate:S.settings.startDate,video:!!S.settings.videoUrl}]);closeSheet();render();toast('Uloženo')};
     $('simBtn').onclick=()=>{const dates=new Set(S.checkins.map(c=>c.date));let d=todayStr();while(dates.has(d))d=addDays(d,-1);S.checkins.push({date:d});S.checkins.sort((a,b)=>a.date<b.date?-1:1);recompute();save([{type:'test-day',date:d}]);render();toast(`Přidán den ${S.checkins.length}`);openSettings()};
     $('undoBtn').onclick=()=>{const c=S.checkins.pop();if(c){S.withdrawals=S.withdrawals.filter(w=>w.afterN<=S.checkins.length);Object.keys(S.offers).forEach(k=>{if(+k>S.checkins.length)delete S.offers[k]});S.claimed=S.claimed.filter(id=>{const r=REWARDS.find(x=>x.id===id);return r&&r.n<=S.checkins.length});recompute();save([{type:'undo-day',date:c.date}]);render();openSettings()}};
     $('restoreBtn').onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($('backup').value.trim()))));S=normalize(o);recompute();save([{type:'restore'}]);closeSheet();render();toast('Obnoveno')}catch(e){toast('Záloha není čitelná')}};
+    $('tutBtn').onclick=()=>{closeSheet();tutorial()};
     $('resetBtn').onclick=()=>{if(confirm('Opravdu smazat celou výzvu? Tohle nejde vrátit.')){const keep=S.settings;S=structuredClone(DEFAULTS);S.settings=keep;save([{type:'reset'}]);closeSheet();render()}};
   });
 }
 
+/* ============ TUTORIAL (first visit) ============ */
+function tutorial(){
+  const dep=kc(DEP(),0), fin=kc(project(0,N()).pop(),0), d33=kc(project(0,33).pop(),0), d66=kc(project(0,66).pop(),0), bs=mmss((S.settings.basicStart||0)*1000), name=S.settings.catName;
+  const start=startAt().toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'});
+  const pages=[
+   `<div class="tut-ic">🐾</div><h2>Ahoj Terezko, tohle je ${name}.</h2><p class="small" style="margin:10px 0 0">Kočka, která žije z úroků. Sto dní ti bude ukazovat, co dokážou peníze, když je necháš pracovat. Provedu tě tím — zabere to minutu.</p>`,
+   `<div class="tut-ic">🎬</div><h2>Každý den jedno video</h2><p class="small" style="margin:10px 0 0">Pustíš si priming (klidně ráno). Až dojede, ${name} si sama dojde pro vklad <b>${dep}</b> a ke všemu, co má, se připíše <b>${fmt(R()*100,0)} %</b> úrok. Máš dva levely: <b>Základní</b> (od ${bs} do konce) a <b>Pokročilý</b> (celé video). Vklad je stejný.</p>`,
+   `<div class="tut-ic">📈</div><h2>Úrok z úroku</h2><p class="small" style="margin:10px 0 0">Prvních pár týdnů to vypadá nudně. Pak se to zlomí. Sto dní × ${dep} je jen ${kc(DEP()*N(),0)} — ale na konci budeš mít:</p><div class="tut-demo"><div><div class="v num">${d33}</div><div class="l">den 33</div></div><div><div class="v num">${d66}</div><div class="l">den 66</div></div><div><div class="v num" style="color:var(--mint)">${fin}</div><div class="l">den 100</div></div></div><p class="small" style="margin:8px 0 0">Zbytek jsou úroky. Graf v záložce <b>Graf</b> ti to ukáže každý den.</p>`,
+   `<div class="tut-ic">😼</div><h2>Klepni na ni</h2><p class="small" style="margin:10px 0 0">${name} roste s tebou — z kotěte až na… no, uvidíš. Každých pár dní dostane něco nového (záložka <b>Odměny</b>) a každý den umí jiný trik, když na ni klepneš. Někdy i něco tajného.</p>`,
+   `<div class="tut-ic">💸</div><h2>Pozor na dny 33 a 66</h2><p class="small" style="margin:10px 0 0">Dvakrát ti nabídnu vzít si peníze hned. Můžeš — jsou tvoje. Ale úroky pak začnou od nuly a na konci budeš mít <b>o tisíce míň</b>. Rozhodnutí je jen na tobě a ukážu ti, co které stojí.</p>`,
+   `<div class="tut-ic">🚀</div><h2>Start: ${start}</h2><p class="small" style="margin:10px 0 0">Jeden den = jedno video. Vynechaný den se nepočítá, jen tě zdrží. Po 100 dnech je celý zůstatek tvůj — v hotovosti od táty.</p><p class="small" style="margin:8px 0 0">Návod si můžeš kdykoli pustit znovu přes ozubené kolo (táta zná PIN).</p>`
+  ];
+  let i=0;const show=()=>{const last=i===pages.length-1;openSheet(`<div class="center" data-testid="tutorial">${pages[i]}<div class="tut-dots">${pages.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}</div><div class="row" style="margin-top:16px">${i>0?`<button class="btn ghost" id="tutBack">Zpět</button>`:`<button class="btn ghost" id="tutSkip" data-testid="tutorial-skip">Přeskočit</button>`}<button class="btn primary" id="tutNext" data-testid="tutorial-next">${last?'Jdeme na to':'Dál →'}</button></div></div>`,()=>{
+    $('sheet').classList.add('center');
+    const done=()=>{S.tutorialDone=true;save([{type:'tutorial',page:i+1}]);closeSheet();if(last)confetti(120)};
+    $('tutNext').onclick=()=>{i++;if(i<pages.length)show();else done()};
+    const b=$('tutBack');if(b)b.onclick=()=>{i--;show()};
+    const sk=$('tutSkip');if(sk)sk.onclick=done;
+  })};
+  show();
+}
+window.tutorial=tutorial;
+
 /* ============ BOOT ============ */
 window.closeSheet=closeSheet;
 render();
-pullSync();
+pullSync().then(()=>{if(!S.tutorialDone&&!$('overlay').classList.contains('on'))tutorial()});
 window.addEventListener('resize',()=>{if(tab==='chart')drawChart()});
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>drawChart());
 </script>

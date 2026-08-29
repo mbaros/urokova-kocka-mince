@@ -14,7 +14,7 @@ function stateWith(n, settings = {}, extra = {}) {
     d.setDate(d.getDate() - i);
     checkins.push({ date: `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}` });
   }
-  return { checkins, settings: { ...STARTED, ...settings }, ...extra };
+  return { checkins, settings: { ...STARTED, ...settings }, tutorialDone: true, ...extra };
 }
 
 /** The page loads whatever the server holds, so tests seed the server, not localStorage. */
@@ -54,11 +54,27 @@ test.describe('Úroková kočka smoke', () => {
   });
 
   test('before the start date a countdown is shown and no check-in is possible', async ({ page }) => {
-    await seed(page, { settings: { startDate: '2099-01-01' } });
+    await seed(page, { settings: { startDate: '2099-01-01' }, tutorialDone: true });
     await page.goto('/');
     await expect(page.getByText('Výzva začíná')).toBeVisible();
     await expect(page.locator('#cd')).toContainText('hodin');
     await expect(page.getByTestId('checkin-done')).toHaveCount(0);
+  });
+
+  test('first visit shows the tutorial; finishing it is remembered on the server', async ({ page }) => {
+    await seed(page, { settings: STARTED });
+    await page.goto('/');
+    await expect(page.getByTestId('tutorial')).toContainText('Ahoj Terezko');
+    for (let i = 0; i < 5; i++) await page.getByTestId('tutorial-next').click();
+    await expect(page.getByTestId('tutorial')).toContainText('Start:');
+    await page.getByTestId('tutorial-next').click();
+    await expect(page.getByTestId('tutorial')).toHaveCount(0);
+    await expect(page.locator('#sync')).toHaveText(/uloženo na serveru/);
+    await page.reload();
+    await page.waitForTimeout(800);
+    await expect(page.getByTestId('tutorial')).toHaveCount(0);
+    const saved = await (await page.request.get('/api/state')).json();
+    expect(saved.state.tutorialDone).toBe(true);
   });
 
   test('tapping the cat plays the daily easter egg (speech bubble appears)', async ({ page }) => {

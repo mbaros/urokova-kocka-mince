@@ -64,7 +64,7 @@ graph TB
   "withdrawals": [{"afterN":33,"date":"…","amount":907.68}],
   "offers": {"33":"kept"},
   "claimed": ["r1"],
-  "videoStartedAt": null, "videoStartedFor": null, "level": "basic"
+  "videoStartedAt": null, "videoStartedFor": null, "level": "basic", "tutorialDone": false
 }
 ```
 
