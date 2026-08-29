@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# Non-destructive end-to-end smoke test of Úroková kočka.
+# Required before declaring any change as done.
+#
+# Usage: bin/e2e-smoke [BASE_URL]
+#   Without BASE_URL a local server (FastAPI: app + API) is started on 127.0.0.1:8765.
+#   With BASE_URL (e.g. the production URL incl. ?k=token) only the HTTP + JS checks
+#   run against it; the Playwright suite always runs against the local copy.
+set -u
+cd "$(dirname "$0")/.."
+
+PORT=8765
+LOCAL="http://127.0.0.1:$PORT"
+BASE="${1:-$LOCAL}"
+ANSI_GREEN=$'\033[32m'; ANSI_RED=$'\033[31m'; ANSI_DIM=$'\033[2m'; ANSI_RESET=$'\033[0m'
+PASS=0; FAIL=0; FAIL_NAMES=(); SERVER_PID=""
+
+trap 'cleanup' EXIT
+cleanup() { [ -n "$SERVER_PID" ] && kill "$SERVER_PID" 2>/dev/null; rm -rf /tmp/_kocka_page.js "${TMPDATA:-}"; }
+
+ok()   { PASS=$((PASS+1)); printf "%s ✓ %s%s\n" "$ANSI_GREEN" "$1" "$ANSI_RESET"; }
+bad()  { FAIL=$((FAIL+1)); FAIL_NAMES+=("$1"); printf "%s ✗ %s%s\n" "$ANSI_RED" "$1" "$ANSI_RESET";
+         [ -n "${2:-}" ] && printf "%s   %s%s\n" "$ANSI_DIM" "$2" "$ANSI_RESET"; }
+step() { printf "%s── %s%s\n" "$ANSI_DIM" "$1" "$ANSI_RESET"; }
+
+# ─── 0. local server (app + API) with a throw-away data dir ───
+step "0. Local server"
+TMPDATA=$(mktemp -d)
+DATA_DIR="$TMPDATA" python3 -m uvicorn server.main:app --host 127.0.0.1 --port "$PORT" --log-level warning >/tmp/_kocka_uvicorn.log 2>&1 &
+SERVER_PID=$!
+for _ in $(seq 1 20); do curl -s -o /dev/null "$LOCAL/" && break; sleep 0.2; done
+curl -s -o /dev/null "$LOCAL/" && ok "server on $LOCAL" || bad "server did not start" "$(tail -5 /tmp/_kocka_uvicorn.log)"
+
+# ─── 1. HTTP health ───────────────────────────────────────
+step "1. HTTP health ($BASE)"
+code=$(curl -sL -o /dev/null -w '%{http_code}' "$BASE")
+[ "$code" = "200" ] && ok "GET → 200" || bad "GET expected 200 got $code"
+
+# ─── 1b. API contract (local only — production data is never touched) ──
+step "1b. API contract"
+h=$(curl -s "$LOCAL/api/health")
+echo "$h" | grep -q '"ok":true' && ok "GET /api/health ok:true" || bad "GET /api/health" "$h"
+code=$(curl -s -o /dev/null -w '%{http_code}' "$LOCAL/api/state")
+[ "$code" = "404" ] && ok "GET /api/state on empty store → 404" || bad "GET /api/state expected 404 got $code"
+code=$(curl -s -o /dev/null -w '%{http_code}' -X PUT "$LOCAL/api/state" -H 'content-type: application/json' -d '{"state":{"checkins":[]},"events":[{"type":"e2e","payload":{"x":1}}]}')
+[ "$code" = "200" ] && ok "PUT /api/state → 200" || bad "PUT /api/state expected 200 got $code"
+keys=$(curl -s "$LOCAL/api/state" | python3 -c 'import sys,json;print(",".join(sorted(json.load(sys.stdin).keys())))')
+[ "$keys" = "state,updatedAt" ] && ok "GET /api/state shape {state,updatedAt}" || bad "GET /api/state shape" "$keys"
+[ -f "$TMPDATA/events.jsonl" ] && grep -q '"type": "e2e"' "$TMPDATA/events.jsonl" && ok "events appended to events.jsonl" || bad "events.jsonl missing the event"
+code=$(curl -s -o /dev/null -w '%{http_code}' -X PUT "$LOCAL/api/state" -H 'content-type: application/json' -d '{"nope":1}')
+[ "$code" = "422" ] && ok "PUT invalid body → 422" || bad "PUT invalid body expected 422 got $code"
+
+# ─── 2. HTML render + JS syntax ───────────────────────────
+step "2. HTML render + JS syntax"
+html=$(curl -sL "$BASE")
+echo "$html" | grep -q '<title>Úroková kočka</title>' && ok "title present" || bad "title missing"
+strays=$(echo "$html" | grep -oE 'onclick="[^"]+\\'\''[^"]*' | wc -l | tr -d ' ')
+[ "$strays" = "0" ] && ok "no stray \\\\' in onclick handlers" || bad "$strays onclick handlers contain stray escapes"
+js_err=$(echo "$html" | python3 -c "
+import re,subprocess,sys
+m=re.search(r'<script>(.+?)</script>', sys.stdin.read(), re.DOTALL)
+if not m: print('no inline script'); sys.exit(0)
+open('/tmp/_kocka_page.js','w').write(m.group(1))
+r=subprocess.run(['node','--check','/tmp/_kocka_page.js'], capture_output=True, text=True)
+print('OK' if r.returncode==0 else r.stderr.strip()[:300])
+" 2>&1)
+[ "$js_err" = "OK" ] && ok "node --check on inline JS" || bad "JS SyntaxError" "$js_err"
+
+# ─── 3. Playwright browser suite ──────────────────────────
+step "3. Playwright browser tests (local copy)"
+if [ -d tests/node_modules ]; then
+  pw_out=$(cd tests && BASE_URL="$LOCAL" npx playwright test --reporter=line 2>&1)
+  pw_rc=$?
+  if [ "$pw_rc" = "0" ]; then
+    ok "Playwright: $(echo "$pw_out" | grep -E 'passed|failed' | tail -1)"
+  else
+    bad "Playwright suite failed" "$(echo "$pw_out" | tail -15)"
+  fi
+else
+  bad "Playwright not installed (cd tests && npm install && npx playwright install chromium)"
+fi
+
+# ─── Summary ──────────────────────────────────────────────
+echo
+if [ "$FAIL" = "0" ]; then
+  printf "%s== %d/%d pass — E2E OK ==%s\n" "$ANSI_GREEN" "$PASS" "$((PASS+FAIL))" "$ANSI_RESET"; exit 0
+else
+  printf "%s== %d/%d pass, %d FAIL ==%s\n" "$ANSI_RED" "$PASS" "$((PASS+FAIL))" "$FAIL" "$ANSI_RESET"
+  for n in "${FAIL_NAMES[@]}"; do printf "  - %s\n" "$n"; done; exit 1
+fi

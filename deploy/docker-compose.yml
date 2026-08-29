@@ -1,0 +1,28 @@
+# Úroková kočka on martin1 — app + API in one small container, joined to the
+# shared Caddy network. Caddy (container qa-tracker-caddy, config
+# /home/bobek/jarabot-metrics/Caddyfile) routes the secret path here —
+# see deploy/Caddyfile.snippet. Progress lives in ./data on the host.
+services:
+  kocka:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: urokova-kocka:latest
+    container_name: kocka
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ../data:/data
+    environment:
+      DATA_DIR: /data
+    networks:
+      - caddy
+    mem_limit: 256m
+    cpus: 0.5
+
+networks:
+  caddy:
+    external: true
+    name: jarabot-metrics_default

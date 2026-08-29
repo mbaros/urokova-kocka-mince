@@ -1,0 +1,3 @@
+[submodule ".agentic"]
+	path = .agentic
+	url = https://github.com/xgroot-dev/best-practices-agentic-coding.git

@@ -1,0 +1,24 @@
+# ── Úroková kočka ──────────────────────────────────────────────────────────
+# Paste inside the `martin1.box.yarabot.io { ... }` block of
+# /home/bobek/jarabot-metrics/Caddyfile, ABOVE the final catch-all `handle {}`.
+# Then:  docker exec qa-tracker-caddy caddy reload --config /etc/caddy/Caddyfile
+#
+# Replace the two placeholders with the values from `openssl rand -hex 24`.
+# They live ONLY in the server Caddyfile — never in this repo.
+#
+#   SECRET_PATH  — long random path segment (the "unguessable URL")
+#   ACCESS_TOKEN — required as ?k=… on every request; anything else → 404
+
+handle /k/{{SECRET_PATH}} {
+	redir * /k/{{SECRET_PATH}}/?{query} permanent
+}
+handle /k/{{SECRET_PATH}}/* {
+	@authorized query k={{ACCESS_TOKEN}}
+	handle @authorized {
+		header Cache-Control "no-store"
+		uri strip_prefix /k/{{SECRET_PATH}}
+		reverse_proxy kocka:8000
+	}
+	# Wrong or missing token looks exactly like a page that does not exist.
+	respond 404
+}

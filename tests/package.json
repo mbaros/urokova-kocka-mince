@@ -1,0 +1,13 @@
+{
+  "name": "urokova-kocka-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test --reporter=line",
+    "test:headed": "playwright test --headed --reporter=line",
+    "test:debug": "PWDEBUG=1 playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.0"
+  }
+}
