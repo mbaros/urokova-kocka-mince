@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-08-29] Prompt #12
+
+### Fixed
+- Rychlé klepání na telefonu přibližovalo stránku (double-tap zoom) → `touch-action: manipulation` + `maximum-scale=1`.
+
+---
+
 ## [2026-08-29] Prompt #11 — video na iPhonu
 
 ### Fixed

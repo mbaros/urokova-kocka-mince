@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#14121C">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐱</text></svg>">
@@ -35,7 +35,8 @@
   --shadow:0 8px 28px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;touch-action:manipulation} /* no double-tap zoom on fast taps (iOS) */
+button,a,.cat,.tabs,.level,.quiz,.chips{touch-action:manipulation}
 body{background:var(--bg);color:var(--ink);font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 a{color:var(--gold);font-weight:800}
