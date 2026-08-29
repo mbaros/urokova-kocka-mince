@@ -582,7 +582,8 @@ function runEgg(egg,ctx){
   return Math.max(end,1800);
 }
 const SECRET={id:'hearts',say:'Mám tě ráda ❤️',fx:{g:['❤️','💛','💚','💙','💜'],n:14},m:['grow','grow']};
-function todaysEgg(){const st=stageIdx();let idx=((dayIndex()%100)+100)%100;let e=EGGS100[idx],guard=0;while(e.min>st&&guard++<100){idx=(idx+37)%100;e=EGGS100[idx]}return e}
+// Trik dne = den výzvy (počet check-inů): den 1 mrknutí … den 100 finále. Před startem (0 check-inů) mrknutí.
+function todaysEgg(){const st=stageIdx();let idx=Math.max(0,S.checkins.length-1)%100;let e=EGGS100[idx],guard=0;while(e.min>st&&guard++<100){idx=(idx+37)%100;e=EGGS100[idx]}return e}
 let clicks=0, busy=false;
 function bindCat(wrapId,fxId,bubbleId){
   const wrap=$(wrapId), svg=wrap.querySelector('svg'); if(!svg)return;

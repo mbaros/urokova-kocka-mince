@@ -79,7 +79,7 @@ Eventy (`events.jsonl`, jeden JSON na řádek): `checkin`, `offer`, `withdrawal`
 
 - Stupně podle počtu check-inů: kotě (0) → kočka (10) → velká kočka (25) → mini puma (45) → malá lvice (65) → lvice (85). Mění se měřítko, barva srsti, tvar uší, čumák, střapec na ocase.
 - Výbava (gear) z odměn: obojek, korunka, brýle, šátek, plášť, svaly, křídla, zlatý obojek, trofej (aura). Hračky se zobrazují kolem kočky, kulisa mění pozadí, titul je odznak u jména.
-- Easter eggy: `app/eggs.js` — `MOTIONS` (Web Animations API na skupinách `.head .eyes .eyeR .tail .pawL .pawR .arms .body` nebo celém SVG) a `EGGS100[]` (den i výzvy → egg i; `min` = potřebný stupeň, jinak se skočí o 37 dál). Egg = pohyby + částice + letící prop (emoji po dráze) + návazné pohyby + bublina. Každý 5. klik = tajná „Mám tě ráda“.
+- Easter eggy: `app/eggs.js` — `MOTIONS` (Web Animations API na skupinách `.head .eyes .eyeR .tail .pawL .pawR .arms .body` nebo celém SVG) a `EGGS100[]` (den výzvy = počet check-inů → egg; `min` = potřebný stupeň, jinak se skočí o 37 dál). Egg = pohyby + částice + letící prop (emoji po dráze) + návazné pohyby + bublina. Každý 5. klik = tajná „Mám tě ráda“.
 
 ## Externí závislosti
 

@@ -2,6 +2,9 @@
 
 ## [2026-08-29] Prompt #10 — písmo s českou diakritikou
 
+### Fixed
+- Easter egg se vybíral podle kalendářního dne od startu, ne podle dne výzvy — testovací dny ho neměnily. Teď: den N výzvy (N-tý check-in) = trik N.
+
 ### Changed
 - Display písmo Fredoka nemá ě/č/ř (padalo do náhradního fontu, „Kotě-žák“ vypadalo slepeně) → **Baloo 2** (stejně hravé, kompletní latin-ext). Nunito zůstává pro text.
 
