@@ -165,6 +165,13 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 .gain .l{font-size:12px;color:var(--muted);font-weight:800}
 .gain .int .v{color:var(--mint)}
 .gain .dep .v{color:var(--gold)}
+.flow{display:flex;align-items:flex-end;justify-content:center;gap:12px;margin-top:4px}
+.flow .eyebrow{display:block;margin-bottom:0}
+.flow .was .wv{font-family:"Baloo 2";font-weight:600;font-size:24px;color:var(--muted);text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:color-mix(in srgb,var(--muted) 55%,transparent);padding-bottom:6px}
+.flow .arr{font-family:"Baloo 2";font-size:30px;font-weight:700;color:var(--mint);padding-bottom:6px;animation:nudge 1.2s ease-in-out infinite}
+.flow .now .nv{font-size:40px;font-weight:700;line-height:1.1}
+.delta{display:inline-block;margin-top:8px;padding:5px 12px;border-radius:999px;background:color-mix(in srgb,var(--mint) 16%,transparent);color:var(--mint);font-weight:800;font-size:13px}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
 .reward-ic{font-size:64px;line-height:1;margin:8px 0;animation:pop .6s cubic-bezier(.2,.8,.2,1)}
 @keyframes pop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
 .offer{border:2px solid var(--coral);background:var(--surface)}
@@ -675,7 +682,7 @@ function renderCheckin(){
     $('startSave').onclick=()=>{const v=$('startInput').value;if(!v||v<todayStr()){toast('Vyber dnešek nebo pozdější den.');return}S.settings.startDate=v;save([{type:'start-changed',startDate:v,by:'kid'}]);render();toast('Start nastaven na '+new Date(v+'T12:00:00').toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'}))};
     return;
   }
-  if(done){const c=S.checkins.find(c=>c.date===t);el.innerHTML=`<div class="eyebrow">Dnes hotovo ✓</div><h2 style="margin-top:6px">Zítra zase.</h2><div class="gain"><div class="dep"><div class="v num">+${fmt(c.deposit,0)}</div><div class="l">vklad</div></div><div class="int"><div class="v num">+${fmt(c.interest)}</div><div class="l">úrok</div></div></div><p class="small" style="margin:0">Zítřejší úrok bude asi <b>${kc((balance()+DEP())*R())}</b>. Každý den o kousek víc.</p>`;return}
+  if(done){const c=S.checkins.find(c=>c.date===t);el.innerHTML=`<div class="eyebrow">Dnes hotovo ✓</div><h2 style="margin-top:6px">Zítra zase.</h2><div class="gain"><div class="dep"><div class="v num">+${fmt(c.deposit,0)}</div><div class="l">vklad</div></div><div class="int"><div class="v num">+${fmt(c.interest)}</div><div class="l">úrok</div></div></div><p class="small num" style="margin:0 0 6px"><span style="color:var(--muted);text-decoration:line-through">${kc(c.after-c.deposit-c.interest,0)}</span> <b style="color:var(--mint)">→</b> <b>${kc(c.after,0)}</b></p><p class="small" style="margin:0">Zítřejší úrok bude asi <b>${kc((balance()+DEP())*R())}</b>. Každý den o kousek víc.</p>`;return}
 
   const url=S.settings.videoUrl, id=ytId(url), started=S.videoStartedFor===t?S.videoStartedAt:null;
   const need=S.settings.minMinutes*60000, left=started?Math.max(0,need-(Date.now()-started)):need;
@@ -739,7 +746,8 @@ function doCheckin(source){
   screens.push(`<div class="eyebrow">Gratuluju!</div><div class="bigday">${c.n}.</div><h2>Tohle je tvůj ${c.n}. den</h2><p class="small" style="margin:8px 0 0">${sk>1?`${sk} ${plural(sk,'den','dny','dní')} v kuse. `:''}${N()-c.n>0?`Zbývá ${N()-c.n} ${plural(N()-c.n,'den','dny','dní')}.`:'A je to. Sto ze sta.'}</p>`);
   screens.push(`<div class="eyebrow">Dnes jsi kočičku vylepšila o</div>
     <div class="gain"><div class="dep"><div class="v num">+${fmt(c.deposit,0)} Kč</div><div class="l">vklad za dnešek</div></div><div class="int"><div class="v num">+<span id="cu">0</span> Kč</div><div class="l">úrok z ${kc(before+c.deposit,0)}</div></div></div>
-    <div class="num"><span class="eyebrow">nový zůstatek</span><div style="font-size:40px;font-weight:700;margin-top:2px"><span id="cu2">${fmt(before,0)}</span> Kč</div></div>
+    <div class="flow num" data-testid="balance-flow"><div class="was"><span class="eyebrow">bylo</span><div class="wv" data-testid="balance-before">${fmt(before,0)} Kč</div></div><div class="arr" aria-hidden="true">→</div><div class="now"><span class="eyebrow">nový zůstatek</span><div class="nv"><span id="cu2">${fmt(before,0)}</span> Kč</div></div></div>
+    <div class="delta" data-testid="balance-delta">+${fmt(c.after-before,2)} Kč${before>0?` · o ${Math.round((c.after/before-1)*100)} % víc než včera`:' · první koruny na účtu'}</div>
     ${stAfter>stBefore?`<p style="margin:12px 0 0;font-weight:800">🐾 A z ${STAGES[stBefore].name} je odteď <b>${STAGES[stAfter].name}</b>.</p>`:''}
     ${sur?`<div class="surprise"><div class="em">${sur.em}</div><p><b>${sur.t}</b>${sur.p}</p></div>`:''}`);
   if(reward)screens.push(`<div class="eyebrow">Nová odměna</div><div class="reward-ic">${reward.em}</div><h2>${reward.t}</h2><p class="small" style="margin:8px 0 0">${reward.d}</p>`);

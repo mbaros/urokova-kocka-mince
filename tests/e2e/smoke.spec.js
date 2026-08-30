@@ -107,6 +107,11 @@ test.describe('Úroková kočka smoke', () => {
     await page.getByTestId('sheet-next').click();
     await expect(page.locator('#sheet')).toContainText('Dnes jsi kočičku vylepšila o');
     await expect(page.locator('#sheet')).toContainText('+16 Kč');
+    // old balance → new balance, plus what changed
+    await expect(page.getByTestId('balance-before')).toHaveText('0 Kč');
+    await expect(page.locator('#cu2')).toHaveText('16', { timeout: 3000 }); // count-up ends at 16.48 → "16"
+    await expect(page.getByTestId('balance-delta')).toContainText('+16,48 Kč');
+    await expect(page.getByTestId('balance-delta')).toContainText('první koruny');
     await page.getByTestId('sheet-next').click();
     await expect(page.locator('#sheet')).toContainText('První mince');
     await page.getByTestId('sheet-next').click();
@@ -368,6 +373,22 @@ test.describe('Úroková kočka smoke', () => {
     await page.goto('/');
     await page.getByTestId('cat').locator('svg').click({ force: true });
     await expect(page.locator('#bubbleToday')).toHaveText('Fuj! Mokro!'); // egg 9 = drop
+  });
+
+  test('the celebration shows old balance → new balance with the difference in Kč and %', async ({ page }) => {
+    await seed(page, stateWith(2, {}, {}, 1));     // two days done, ending yesterday: 16.48 → 33.45
+    await page.reload();
+    await page.getByTestId('checkin-done').click();
+    await page.getByTestId('sheet-next').click();
+    await expect(page.getByTestId('balance-before')).toHaveText('33 Kč');
+    await expect(page.locator('#cu2')).toHaveText('51', { timeout: 3000 }); // (33.45+16)·1.03 = 50.93
+    await expect(page.getByTestId('balance-delta')).toContainText('+17,48 Kč');
+    await expect(page.getByTestId('balance-delta')).toContainText('o 52 % víc než včera');
+    // the same before → after line stays visible on the "Dnes hotovo" card
+    for (let i = 0; i < 3; i++) await page.getByTestId('sheet-next').click();
+    await expect(page.getByText('Dnes hotovo')).toBeVisible();
+    await expect(page.locator('#checkinCard')).toContainText('33 Kč');
+    await expect(page.locator('#checkinCard')).toContainText('51 Kč');
   });
 
   test('a lesson reopened from Škola counts as read and its chat carries the lesson context', async ({ page }) => {

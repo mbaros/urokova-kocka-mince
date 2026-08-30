@@ -86,3 +86,18 @@ Kompletní přepis `app/index.html` (server sync, YouTube embed, oslava, odměny
 **Tests added/modified:** beze změny (infrastruktura); `bin/e2e-smoke` zelené
 
 ---
+
+## 2026-08-30 — Prompt #17
+
+**User prompt:**
+> (screenshot oslavy s „Nový zůstatek 51 Kč“) Navrhni design a implementuj — ať je tady někde vidět i původní zůstatek, např. starý zůstatek → nový zůstatek.
+
+**Plan:** řádek bylo → nový zůstatek + pilulka s rozdílem v Kč a % → totéž na kartě Dnes hotovo → test → deploy.
+
+**Summary of what was done:** Vše výše (CHANGELOG #17).
+
+**Files changed:** `app/index.html`, `tests/e2e/smoke.spec.js`, `docs/*`
+
+**Tests added/modified:** +1 Playwright scénář, rozšířen test prvního check-inu
+
+---

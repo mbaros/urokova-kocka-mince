@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-30] Prompt #17 — starý zůstatek → nový zůstatek
+
+### Changed
+- Oslava po videu: místo samotného „Nový zůstatek“ je řádek **bylo (přeškrtnuto) → nový zůstatek** (šipka jemně pulzuje, nový zůstatek dál nabíhá) a pod ním pilulka `+17,48 Kč · o 52 % víc než včera` (první den „první koruny na účtu“). Stejný řádek `33 Kč → 51 Kč` zůstává i na kartě „Dnes hotovo“.
+
+### Tests
+- +1 scénář (den 3: 33 → 51 Kč, +17,48 Kč, 52 %, řádek na kartě Dnes hotovo); den 1 kontroluje 0 Kč → 16 Kč. Celkem 24 Playwright + 8 API.
+
+---
+
 ## [2026-08-29] Prompt #16 — druhá instance „martas“
 
 ### Added
