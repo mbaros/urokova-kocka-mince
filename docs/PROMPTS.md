@@ -101,3 +101,18 @@ Kompletní přepis `app/index.html` (server sync, YouTube embed, oslava, odměny
 **Tests added/modified:** +1 Playwright scénář, rozšířen test prvního check-inu
 
 ---
+
+## 2026-08-30 — Prompt #18
+
+**User prompt:**
+> Ať jsou ty věty srozumitelnější — např. „Patří do rodiny“ → chtěl bych „Mince už patří do rodiny“ nebo tak něco hezkého. Zreviduj všechny texty, promysli to a oprav to.
+
+**Plan:** projít REWARDS + SURPRISES + krátké nadpisy → celé věty se jménem kočky přes `rtext()` → ověřit čísla v textech proti matematice → test → deploy.
+
+**Summary of what was done:** Viz CHANGELOG #18.
+
+**Files changed:** `app/index.html`, `tests/e2e/smoke.spec.js`, `docs/*`
+
+**Tests added/modified:** rozšířen scénář dne 3, upraven scénář 100 dní
+
+---

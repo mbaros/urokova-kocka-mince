@@ -239,7 +239,7 @@ test.describe('Úroková kočka smoke', () => {
     await seed(page, stateWith(100));
     await page.goto('/');
     await expect(page.getByTestId('balance')).toHaveText(/10\s008/);
-    await expect(page.getByText('Hotovo. 100 dní.')).toBeVisible();
+    await expect(page.getByText('Hotovo — sto dní!')).toBeVisible();
   });
 
   test('withdrawal offer appears after day 33 and keeping it logs a badge', async ({ page }) => {
@@ -384,8 +384,12 @@ test.describe('Úroková kočka smoke', () => {
     await expect(page.locator('#cu2')).toHaveText('51', { timeout: 3000 }); // (33.45+16)·1.03 = 50.93
     await expect(page.getByTestId('balance-delta')).toContainText('+17,48 Kč');
     await expect(page.getByTestId('balance-delta')).toContainText('o 52 % víc než včera');
+    // day 3 reward speaks about the cat by name, in plain sentences
+    await page.getByTestId('sheet-next').click();
+    await expect(page.locator('#sheet')).toContainText('Obojek');
+    await expect(page.locator('#sheet')).toContainText('Mince dostává obojek — už patří do rodiny');
     // the same before → after line stays visible on the "Dnes hotovo" card
-    for (let i = 0; i < 3; i++) await page.getByTestId('sheet-next').click();
+    for (let i = 0; i < 2; i++) await page.getByTestId('sheet-next').click();
     await expect(page.getByText('Dnes hotovo')).toBeVisible();
     await expect(page.locator('#checkinCard')).toContainText('33 Kč');
     await expect(page.locator('#checkinCard')).toContainText('51 Kč');

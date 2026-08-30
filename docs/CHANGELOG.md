@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-30] Prompt #18 — srozumitelnější texty odměn
+
+### Changed
+- Všech 30 popisů odměn přepsáno do celých vět s jménem kočky (`{cat}` → `settings.catName`), např. „Tři dny v kuse! Mince dostává obojek — už patří do rodiny.“ Věty u nabídek (33, 66) rovnou říkají, že dnes přijde nabídka na výběr.
+- Opravená čísla: den 82 dělá úrok ~170 Kč (bylo „přes 200“), překvapení „posledních 25 dní přinese víc než prvních 75“ (20/80 neplatilo). Popisy už netvrdí vývoj kočky ve špatný den.
+- Zpráva o vývoji kočky má správný tvar („Z kotěte je odteď kočka“, `STAGES[].gen`), „Zítra zase, ať kočka roste dál.“, „Hotovo — sto dní!“, „A je to — sto dní ze sta. Dokázala jsi to.“
+
+### Tests
+- Den 3 kontroluje text odměny se jménem kočky; test 100 dní upraven na nový nadpis.
+
+---
+
 ## [2026-08-30] Prompt #17 — starý zůstatek → nový zůstatek
 
 ### Changed

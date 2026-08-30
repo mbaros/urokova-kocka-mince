@@ -463,37 +463,38 @@ const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"
 /* ============ REWARDS (every 2–5 days) ============ */
 // type: gear = layer on the cat · toy = something next to her · backdrop = scene behind her · title = badge under her name
 const REWARDS=[
- {id:'r1',n:1,em:'🪙',type:'title',val:'Nováček',t:'První mince',d:'Kotě dostalo první minci. Od teď se každá další nabalí.'},
- {id:'r3',n:3,em:'🎀',type:'gear',val:'collar',t:'Obojek',d:'Tři dny v kuse. Patří do rodiny.'},
- {id:'r5',n:5,em:'🧶',type:'toy',val:'🧶',t:'Klubíčko',d:'První hračka. Zkus na kočku klepnout, když ho má.'},
- {id:'r8',n:8,em:'🌿',type:'backdrop',val:'louka',t:'Louka',d:'Kočka se stěhuje ven na louku.'},
- {id:'r10',n:10,em:'👑',type:'gear',val:'crown',t:'Korunka',d:'Deset dní! Z kotěte je kočka.'},
- {id:'r13',n:13,em:'🐟',type:'toy',val:'🐟',t:'Rybka',d:'Svačina k tomu, jak rostou úroky.'},
- {id:'r16',n:16,em:'🌙',type:'backdrop',val:'noc',t:'Noční obloha',d:'Šestnáct dní. Kočka má hvězdy nad hlavou.'},
- {id:'r20',n:20,em:'🕶️',type:'gear',val:'shades',t:'Brýle',d:'Dvacet dní. Úroky už dělají víc než pár korun denně.'},
- {id:'r23',n:23,em:'🐭',type:'toy',val:'🐭',t:'Myška',d:'Plyšová. Slibujeme.'},
- {id:'r26',n:26,em:'🏖️',type:'backdrop',val:'plaz',t:'Pláž',d:'Kočka na dovolené. Peníze pracují i tak.'},
- {id:'r30',n:30,em:'🧣',type:'gear',val:'scarf',t:'Šátek',d:'Třicet dní. Už je z ní velká kočka.'},
- {id:'r33',n:33,em:'🦸',type:'gear',val:'cape',t:'Plášť · fáze 1',d:'Třetina za tebou — a první nabídka, která tě bude lákat.'},
- {id:'r36',n:36,em:'🎧',type:'toy',val:'🎧',t:'Sluchátka',d:'Na priming, samozřejmě.'},
- {id:'r40',n:40,em:'🌆',type:'backdrop',val:'mesto',t:'Město',d:'Čtyřicet dní. Střechy a západ slunce.'},
- {id:'r44',n:44,em:'🛹',type:'toy',val:'🛹',t:'Skejt',d:'Kočka má styl.'},
- {id:'r48',n:48,em:'🏅',type:'title',val:'Vytrvalka',t:'Vytrvalka',d:'Skoro půlka. Většina lidí tady dávno není.'},
- {id:'r50',n:50,em:'💪',type:'gear',val:'muscles',t:'Svaly',d:'Padesát dní. Z kočky je mini puma.'},
- {id:'r54',n:54,em:'🏔️',type:'backdrop',val:'hory',t:'Hory',d:'Výš a výš. Stejně jako křivka.'},
- {id:'r58',n:58,em:'🍕',type:'toy',val:'🍕',t:'Pizza',d:'Zasloužená.'},
- {id:'r62',n:62,em:'⚡',type:'title',val:'Nezastavitelná',t:'Nezastavitelná',d:'Šedesát dva dní. Odteď to jde samo.'},
- {id:'r66',n:66,em:'🪽',type:'gear',val:'wings',t:'Křídla · fáze 2',d:'Dvě třetiny. Malá lvice s křídly — a druhá nabídka.'},
- {id:'r70',n:70,em:'🎸',type:'toy',val:'🎸',t:'Kytara',d:'Sedmdesát dní. Kočka má kapelu.'},
- {id:'r74',n:74,em:'🪐',type:'backdrop',val:'vesmir',t:'Vesmír',d:'Úroky už nejsou z tohoto světa.'},
- {id:'r78',n:78,em:'🎮',type:'toy',val:'🎮',t:'Ovladač',d:'Level up.'},
- {id:'r82',n:82,em:'🐆',type:'title',val:'Šelma',t:'Šelma',d:'Osmdesát dva dní. Každý den přibude víc než 200 Kč jen na úrocích.'},
- {id:'r86',n:86,em:'🌅',type:'backdrop',val:'savana',t:'Savana',d:'Lvice je doma.'},
- {id:'r90',n:90,em:'🍦',type:'toy',val:'🍦',t:'Zmrzlina',d:'Deset dní do cíle.'},
- {id:'r94',n:94,em:'📿',type:'gear',val:'goldcollar',t:'Zlatý obojek',d:'Devadesát čtyři. Skoro tam.'},
- {id:'r97',n:97,em:'🌟',type:'title',val:'Legenda',t:'Legenda',d:'Tři dny. Nikdo ti to už nevezme.'},
- {id:'r100',n:100,em:'🏆',type:'gear',val:'trophy',t:'Trofej · cíl',d:'Sto dní. Lvice, trofej — a celý zůstatek je tvůj.'},
+ {id:'r1',n:1,em:'🪙',type:'title',val:'Nováček',t:'První mince',d:'{cat} dostala svou úplně první minci. Každá další se na ni nabalí — přesně takhle funguje úrok.'},
+ {id:'r3',n:3,em:'🎀',type:'gear',val:'collar',t:'Obojek',d:'Tři dny v kuse! {cat} dostává obojek — už patří do rodiny.'},
+ {id:'r5',n:5,em:'🧶',type:'toy',val:'🧶',t:'Klubíčko',d:'První hračka pro kočku. Klepni na ni, když má klubíčko u sebe — něco se stane.'},
+ {id:'r8',n:8,em:'🌿',type:'backdrop',val:'louka',t:'Louka',d:'{cat} se stěhuje ven na louku. Nový domov za osm dní vytrvalosti.'},
+ {id:'r10',n:10,em:'👑',type:'gear',val:'crown',t:'Korunka',d:'Deset dní! {cat} vyrostla z kotěte v kočku a dostává korunku.'},
+ {id:'r13',n:13,em:'🐟',type:'toy',val:'🐟',t:'Rybka',d:'Rybka ke svačině. {cat} si ji zasloužila — a úroky mezitím rostou samy.'},
+ {id:'r16',n:16,em:'🌙',type:'backdrop',val:'noc',t:'Noční obloha',d:'Šestnáct dní. {cat} má odteď nad hlavou hvězdy — nová noční kulisa.'},
+ {id:'r20',n:20,em:'🕶️',type:'gear',val:'shades',t:'Brýle',d:'Dvacet dní. Úrok už přidává přes 13 Kč denně, skoro jako druhý vklad. {cat} si na to bere brýle.'},
+ {id:'r23',n:23,em:'🐭',type:'toy',val:'🐭',t:'Myška',d:'Plyšová myška pro kočku. Slibujeme, že opravdu plyšová.'},
+ {id:'r26',n:26,em:'🏖️',type:'backdrop',val:'plaz',t:'Pláž',d:'{cat} jede na pláž. I když odpočívá, peníze pracují dál.'},
+ {id:'r30',n:30,em:'🧣',type:'gear',val:'scarf',t:'Šátek',d:'Třicet dní. {cat} dostává šátek, ať jí sluší i jako velké kočce.'},
+ {id:'r33',n:33,em:'🦸',type:'gear',val:'cape',t:'Plášť · fáze 1',d:'Třetina za tebou! {cat} dostává hrdinský plášť. A pozor: dnes přijde první nabídka, která tě bude lákat peníze vybrat.'},
+ {id:'r36',n:36,em:'🎧',type:'toy',val:'🎧',t:'Sluchátka',d:'Sluchátka pro kočku. Na priming, samozřejmě — stejně jako ty.'},
+ {id:'r40',n:40,em:'🌆',type:'backdrop',val:'mesto',t:'Město',d:'Čtyřicet dní. {cat} se stěhuje do města, na střechy se západem slunce.'},
+ {id:'r44',n:44,em:'🛹',type:'toy',val:'🛹',t:'Skejt',d:'{cat} má skejt a má styl. Ty taky — 44 dní bez vzdání.'},
+ {id:'r48',n:48,em:'🏅',type:'title',val:'Vytrvalka',t:'Vytrvalka',d:'Skoro půlka. Nový titul Vytrvalka — většina lidí to tady dávno vzdala, ty ne.'},
+ {id:'r50',n:50,em:'💪',type:'gear',val:'muscles',t:'Svaly',d:'Padesát dní! {cat} je mini puma a má na to svaly.'},
+ {id:'r54',n:54,em:'🏔️',type:'backdrop',val:'hory',t:'Hory',d:'{cat} vyráží do hor. Výš a výš — přesně jako tvoje křivka.'},
+ {id:'r58',n:58,em:'🍕',type:'toy',val:'🍕',t:'Pizza',d:'Pizza pro kočku. Po 58 dnech zasloužená.'},
+ {id:'r62',n:62,em:'⚡',type:'title',val:'Nezastavitelná',t:'Nezastavitelná',d:'Šedesát dva dní. Titul Nezastavitelná — úrok teď přidává přes 85 Kč denně, i když spíš.'},
+ {id:'r66',n:66,em:'🪽',type:'gear',val:'wings',t:'Křídla · fáze 2',d:'Dvě třetiny! {cat} dostává křídla. A dnes přijde druhá nabídka na výběr — rozmysli si ji stejně dobře jako tu první.'},
+ {id:'r70',n:70,em:'🎸',type:'toy',val:'🎸',t:'Kytara',d:'Sedmdesát dní. {cat} má kytaru — a založila kapelu.'},
+ {id:'r74',n:74,em:'🪐',type:'backdrop',val:'vesmir',t:'Vesmír',d:'{cat} letí do vesmíru. Úroky už nejsou z tohoto světa.'},
+ {id:'r78',n:78,em:'🎮',type:'toy',val:'🎮',t:'Ovladač',d:'Ovladač pro kočku. Level up — 78 dní.'},
+ {id:'r82',n:82,em:'🐆',type:'title',val:'Šelma',t:'Šelma',d:'Osmdesát dva dní. Titul Šelma — jen na úrocích ti teď každý den přibude přes 160 Kč.'},
+ {id:'r86',n:86,em:'🌅',type:'backdrop',val:'savana',t:'Savana',d:'Savana. {cat} je lvice a je doma.'},
+ {id:'r90',n:90,em:'🍦',type:'toy',val:'🍦',t:'Zmrzlina',d:'Zmrzlina pro kočku. Do cíle zbývá už jen deset dní.'},
+ {id:'r94',n:94,em:'📿',type:'gear',val:'goldcollar',t:'Zlatý obojek',d:'Zlatý obojek pro kočku. Devadesát čtyři dní — už jste skoro tam.'},
+ {id:'r97',n:97,em:'🌟',type:'title',val:'Legenda',t:'Legenda',d:'Tři dny do cíle. Titul Legenda — ten už ti nikdo nevezme.'},
+ {id:'r100',n:100,em:'🏆',type:'gear',val:'trophy',t:'Trofej · cíl',d:'Sto dní! {cat} je lvice s trofejí — a celý zůstatek je tvůj.'},
 ];
+const rtext=x=>x.replace(/\{cat\}/g,S.settings.catName||'Mince');
 const unlocked=()=>REWARDS.filter(r=>S.checkins.length>=r.n);
 const has=g=>unlocked().some(r=>r.type==='gear'&&r.val===g);
 const currentTitle=()=>[...unlocked()].reverse().find(r=>r.type==='title')?.val||null;
@@ -502,12 +503,12 @@ const toys=()=>unlocked().filter(r=>r.type==='toy').map(r=>r.val).slice(-6);
 
 /* ============ CAT ============ */
 const STAGES=[
- {name:'kotě',min:0,scale:1,fur:'#8E7BC8',belly:'#CFC3F2',ear:0},
- {name:'kočka',min:10,scale:1.1,fur:'#8E7BC8',belly:'#CFC3F2',ear:0.1},
- {name:'velká kočka',min:25,scale:1.2,fur:'#9B86BF',belly:'#D8CCEE',ear:0.25},
- {name:'mini puma',min:45,scale:1.3,fur:'#B08E7C',belly:'#E2CDB8',ear:0.5},
- {name:'malá lvice',min:65,scale:1.42,fur:'#C9A35C',belly:'#F0D7A0',ear:0.8},
- {name:'lvice',min:85,scale:1.55,fur:'#D0A046',belly:'#F3D99A',ear:1},
+ {name:'kotě',gen:'kotěte',min:0,scale:1,fur:'#8E7BC8',belly:'#CFC3F2',ear:0},
+ {name:'kočka',gen:'kočky',min:10,scale:1.1,fur:'#8E7BC8',belly:'#CFC3F2',ear:0.1},
+ {name:'velká kočka',gen:'velké kočky',min:25,scale:1.2,fur:'#9B86BF',belly:'#D8CCEE',ear:0.25},
+ {name:'mini puma',gen:'mini pumy',min:45,scale:1.3,fur:'#B08E7C',belly:'#E2CDB8',ear:0.5},
+ {name:'malá lvice',gen:'malé lvice',min:65,scale:1.42,fur:'#C9A35C',belly:'#F0D7A0',ear:0.8},
+ {name:'lvice',gen:'lvice',min:85,scale:1.55,fur:'#D0A046',belly:'#F3D99A',ear:1},
 ];
 function stageIdx(k=S.checkins.length){let s=0;STAGES.forEach((st,i)=>{if(k>=st.min)s=i});return s}
 function catLevel(){return Math.min(10,1+Math.floor(S.checkins.length/10))}
@@ -617,9 +618,9 @@ const SURPRISES=[
  {em:'🎯',t:'Pravidlo 72',p:'Za jak dlouho se peníze zdvojnásobí? 72 děleno úrokem. Při 3 % denně každých 24 dní.'},
  {em:'🏦',t:'Reálný svět',p:'Ve skutečném světě je 3 % denně sen — 7 % za rok je dobrý výsledek. I tak se za 10 let peníze zdvojnásobí, aniž bys hnula prstem.'},
  {em:'☕',t:'Pravidlo latte',p:'Jedno latte denně je asi 25 000 Kč za rok. Investované po 20 let to je přes milion. Není to o kávě — je to o tom, čeho si všimneš.'},
- {em:'😼',t:'Kočka dnes říká',p:'„Nechodím pro vklad, chodím pro úrok.“'},
+ {em:'😼',t:'Kočka dnes říká',p:'„Vklad je to, co přineseš ty. Úrok je to, co přinesu já.“'},
  {em:'🧱',t:'Cihla po cihle',p:'Ani jeden den z těch sta není velký. Velké je jen to, že jsou všechny.'},
- {em:'🚀',t:'Nejrychlejší dny',p:'Posledních 20 dní přinese víc peněz než prvních 80 dohromady. Nejvíc se toho stane těsně před cílem.'},
+ {em:'🚀',t:'Nejrychlejší dny',p:'Posledních 25 dní přinese víc peněz než prvních 75 dohromady. Nejvíc se toho stane těsně před cílem.'},
 ];
 function surpriseFor(n){if(n<2||seeded(n)>0.4)return null;return SURPRISES[Math.floor(seeded(n*7)*SURPRISES.length)]}
 
@@ -670,7 +671,7 @@ function markVideoStarted(t){if(S.videoStartedFor!==t){S.videoStartedAt=Date.now
 function renderCheckin(){
   clearInterval(window._cnt);
   const el=$('checkinCard'), t=todayStr(), done=S.checkins.some(c=>c.date===t), k=S.checkins.length;
-  if(k>=N()){el.innerHTML=`<h2>Hotovo. 100 dní. 🦁</h2><p class="small" style="margin:6px 0 0">Zůstatek ${kc(balance(),0)} je tvůj. A teď víš, jak vypadá křivka, kterou většina lidí nikdy nedokončí.</p>`;return}
+  if(k>=N()){el.innerHTML=`<h2>Hotovo — sto dní! 🦁</h2><p class="small" style="margin:6px 0 0">Zůstatek ${kc(balance(),0)} je tvůj. A teď víš, jak vypadá křivka, kterou většina lidí nikdy nedokončí.</p>`;return}
   if(beforeStart()){
     el.innerHTML=`<div class="eyebrow">Výzva začíná</div><h2 style="margin-top:6px">${startAt().toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'})}</h2>
     <div class="countdown" id="cd"></div><p class="small" style="margin:0">Zatím se tu můžeš rozkoukat — a klepnout na kočku. Od startu ti každé dokoukané priming video přinese <b>${kc(DEP(),0)}</b> plus úrok.</p>
@@ -682,7 +683,7 @@ function renderCheckin(){
     $('startSave').onclick=()=>{const v=$('startInput').value;if(!v||v<todayStr()){toast('Vyber dnešek nebo pozdější den.');return}S.settings.startDate=v;save([{type:'start-changed',startDate:v,by:'kid'}]);render();toast('Start nastaven na '+new Date(v+'T12:00:00').toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'}))};
     return;
   }
-  if(done){const c=S.checkins.find(c=>c.date===t);el.innerHTML=`<div class="eyebrow">Dnes hotovo ✓</div><h2 style="margin-top:6px">Zítra zase.</h2><div class="gain"><div class="dep"><div class="v num">+${fmt(c.deposit,0)}</div><div class="l">vklad</div></div><div class="int"><div class="v num">+${fmt(c.interest)}</div><div class="l">úrok</div></div></div><p class="small num" style="margin:0 0 6px"><span style="color:var(--muted);text-decoration:line-through">${kc(c.after-c.deposit-c.interest,0)}</span> <b style="color:var(--mint)">→</b> <b>${kc(c.after,0)}</b></p><p class="small" style="margin:0">Zítřejší úrok bude asi <b>${kc((balance()+DEP())*R())}</b>. Každý den o kousek víc.</p>`;return}
+  if(done){const c=S.checkins.find(c=>c.date===t);el.innerHTML=`<div class="eyebrow">Dnes hotovo ✓</div><h2 style="margin-top:6px">Zítra zase, ať kočka roste dál.</h2><div class="gain"><div class="dep"><div class="v num">+${fmt(c.deposit,0)}</div><div class="l">vklad</div></div><div class="int"><div class="v num">+${fmt(c.interest)}</div><div class="l">úrok</div></div></div><p class="small num" style="margin:0 0 6px"><span style="color:var(--muted);text-decoration:line-through">${kc(c.after-c.deposit-c.interest,0)}</span> <b style="color:var(--mint)">→</b> <b>${kc(c.after,0)}</b></p><p class="small" style="margin:0">Zítřejší úrok bude asi <b>${kc((balance()+DEP())*R())}</b>. Každý den o kousek víc.</p>`;return}
 
   const url=S.settings.videoUrl, id=ytId(url), started=S.videoStartedFor===t?S.videoStartedAt:null;
   const need=S.settings.minMinutes*60000, left=started?Math.max(0,need-(Date.now()-started)):need;
@@ -743,14 +744,14 @@ function doCheckin(source){
   render(); confetti(220); if(ytPlayer&&ytPlayer.stopVideo)try{ytPlayer.stopVideo()}catch(e){} const lv=$('localVideo');if(lv)try{lv.pause()}catch(e){}
   const sk=streak(), sur=surpriseFor(c.n);
   const screens=[];
-  screens.push(`<div class="eyebrow">Gratuluju!</div><div class="bigday">${c.n}.</div><h2>Tohle je tvůj ${c.n}. den</h2><p class="small" style="margin:8px 0 0">${sk>1?`${sk} ${plural(sk,'den','dny','dní')} v kuse. `:''}${N()-c.n>0?`Zbývá ${N()-c.n} ${plural(N()-c.n,'den','dny','dní')}.`:'A je to. Sto ze sta.'}</p>`);
+  screens.push(`<div class="eyebrow">Gratuluju!</div><div class="bigday">${c.n}.</div><h2>Tohle je tvůj ${c.n}. den</h2><p class="small" style="margin:8px 0 0">${sk>1?`${sk} ${plural(sk,'den','dny','dní')} v kuse. `:''}${N()-c.n>0?`Zbývá ${N()-c.n} ${plural(N()-c.n,'den','dny','dní')}.`:'A je to — sto dní ze sta. Dokázala jsi to.'}</p>`);
   screens.push(`<div class="eyebrow">Dnes jsi kočičku vylepšila o</div>
     <div class="gain"><div class="dep"><div class="v num">+${fmt(c.deposit,0)} Kč</div><div class="l">vklad za dnešek</div></div><div class="int"><div class="v num">+<span id="cu">0</span> Kč</div><div class="l">úrok z ${kc(before+c.deposit,0)}</div></div></div>
     <div class="flow num" data-testid="balance-flow"><div class="was"><span class="eyebrow">bylo</span><div class="wv" data-testid="balance-before">${fmt(before,0)} Kč</div></div><div class="arr" aria-hidden="true">→</div><div class="now"><span class="eyebrow">nový zůstatek</span><div class="nv"><span id="cu2">${fmt(before,0)}</span> Kč</div></div></div>
     <div class="delta" data-testid="balance-delta">+${fmt(c.after-before,2)} Kč${before>0?` · o ${Math.round((c.after/before-1)*100)} % víc než včera`:' · první koruny na účtu'}</div>
-    ${stAfter>stBefore?`<p style="margin:12px 0 0;font-weight:800">🐾 A z ${STAGES[stBefore].name} je odteď <b>${STAGES[stAfter].name}</b>.</p>`:''}
+    ${stAfter>stBefore?`<p style="margin:12px 0 0;font-weight:800">🐾 ${rtext('{cat}')} vyrostla! Z ${STAGES[stBefore].gen} je odteď <b>${STAGES[stAfter].name}</b>.</p>`:''}
     ${sur?`<div class="surprise"><div class="em">${sur.em}</div><p><b>${sur.t}</b>${sur.p}</p></div>`:''}`);
-  if(reward)screens.push(`<div class="eyebrow">Nová odměna</div><div class="reward-ic">${reward.em}</div><h2>${reward.t}</h2><p class="small" style="margin:8px 0 0">${reward.d}</p>`);
+  if(reward)screens.push(`<div class="eyebrow">Nová odměna</div><div class="reward-ic">${reward.em}</div><h2>${reward.t}</h2><p class="small" style="margin:8px 0 0">${rtext(reward.d)}</p>`);
   const lesson=LESSONS[c.n-1]; if(lesson)screens.push(lessonHtml(lesson));
   const lessonIdx=screens.length-1;
   runSheets(screens,(i)=>{if(i===1){countUp($('cu'),0,c.interest,900,v=>fmt(v));countUp($('cu2'),before,c.after,1100,v=>fmt(v,0))}if(reward&&i===2)confetti(140);if(lesson&&i===lessonIdx)bindLesson(lesson)},()=>{if(reward&&!S.claimed.includes(reward.id)){S.claimed.push(reward.id)}if(lesson)markRead(lesson.n);save();renderSchool()});
@@ -889,7 +890,7 @@ function renderOffer(){
 function renderRewards(){
   const k=S.checkins.length;
   const offers=Object.entries(S.offers).map(([d,v])=>({n:+d,html:`<div class="mi"><div class="ic">${v==='kept'?'🛡️':'💸'}</div><div><b>${v==='kept'?'Odolala nabídce':'Vybrala peníze'}</b><span>${v==='kept'?'Nechala peníze pracovat na konci fáze.':'Vzala si hotovost na konci fáze — úroky začaly znovu.'}</span></div><div class="day">den ${d}</div></div>`}));
-  const items=REWARDS.map(m=>({n:m.n,html:`<div class="mi ${k>=m.n?'':'locked'}"><div class="ic">${m.em}</div><div><b>${m.t}</b><span>${k>=m.n?m.d:'odemkne se na dni '+m.n}</span></div><div class="day">${k>=m.n?'✓':'den '+m.n}</div></div>`}));
+  const items=REWARDS.map(m=>({n:m.n,html:`<div class="mi ${k>=m.n?'':'locked'}"><div class="ic">${m.em}</div><div><b>${m.t}</b><span>${k>=m.n?rtext(m.d):'odemkne se na dni '+m.n}</span></div><div class="day">${k>=m.n?'✓':'den '+m.n}</div></div>`}));
   $('mileList').innerHTML=[...items,...offers].sort((a,b)=>a.n-b.n).map(x=>x.html).join('');
 }
 function renderGear(){
