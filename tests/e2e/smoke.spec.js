@@ -388,8 +388,12 @@ test.describe('Úroková kočka smoke', () => {
     await page.getByTestId('sheet-next').click();
     await expect(page.locator('#sheet')).toContainText('Obojek');
     await expect(page.locator('#sheet')).toContainText('Mince dostává obojek — už patří do rodiny');
+    // lesson 3 explains the three piles in plain words
+    await page.getByTestId('sheet-next').click();
+    await expect(page.getByTestId('lesson')).toContainText('Zaplať nejdřív sobě');
+    await expect(page.getByTestId('lesson')).toContainText('rozdělíš na tři hromádky');
     // the same before → after line stays visible on the "Dnes hotovo" card
-    for (let i = 0; i < 2; i++) await page.getByTestId('sheet-next').click();
+    await page.getByTestId('sheet-next').click();
     await expect(page.getByText('Dnes hotovo')).toBeVisible();
     await expect(page.locator('#checkinCard')).toContainText('33 Kč');
     await expect(page.locator('#checkinCard')).toContainText('51 Kč');

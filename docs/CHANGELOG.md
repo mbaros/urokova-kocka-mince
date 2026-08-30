@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-08-30] Prompt #19 — lekce 3 a úvody kvízů
+
+### Changed
+- Lekce 3 „Zaplať nejdřív sobě“ přepsána podle taťky: spořit z toho, co zbyde, nefunguje; na začátku měsíce rozdělit peníze na tři hromádky (nutné · chci · odložit — spoření/investice nebo třeba dárek během roku); kočka je ta třetí hromádka. Lekce 9 „Tři sklenice“ na ni navazuje (přidává sklenici DÁT).
+- 20 úvodů ke kvízům z telegrafických „Sedmdesát dní. Kvíz.“ na celé věty, které říkají, z čeho kvíz je a proč zrovna dnes.
+
+### Tests
+- Den 3 kontroluje i text lekce („rozdělíš na tři hromádky“).
+
+---
+
 ## [2026-08-30] Prompt #18 — srozumitelnější texty odměn
 
 ### Changed

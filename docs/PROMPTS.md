@@ -116,3 +116,16 @@ Kompletní přepis `app/index.html` (server sync, YouTube embed, oslava, odměny
 **Tests added/modified:** rozšířen scénář dne 3, upraven scénář 100 dní
 
 ---
+
+## 2026-08-30 — Prompt #19
+
+**User prompt:**
+> Tenhle text (lekce 3) je taky nesrozumitelný — místo „většina lidí utratí a spoří, co zbyde“ má být: většina lidí spoří to, co během měsíce neutratí, to nefunguje; správně je na začátku měsíce rozdělit peníze na ty, co utratím za co chci, na nutné věci, a na spoření (investice nebo odložené třeba na dárek).
+
+**Plan:** přepsat lekci 3 v hlasu kočky podle zadání → navázat lekci 9 → projít ostatní lekce a rozepsat telegrafické úvody kvízů → test → deploy.
+
+**Summary of what was done:** Viz CHANGELOG #19.
+
+**Files changed:** `app/lessons.js`, `tests/e2e/smoke.spec.js`, `docs/*`
+
+---
