@@ -235,6 +235,33 @@ test.describe('Úroková kočka smoke', () => {
     await expect(page.locator('#ytPlayer')).toHaveCount(0);
   });
 
+  test('one-tap "Pustit dnešní priming" at the top reuses yesterday\'s level; hidden on day 1 and once done', async ({ page }) => {
+    const V = { videoUrl: 'https://youtu.be/dQw4w9WgXcQ' };
+    // day 1 (nothing done yet): no shortcut — the level is chosen on the check-in card first
+    await seed(page, stateWith(0, V));
+    await page.goto('/');
+    await expect(page.getByTestId('local-video')).toBeVisible();
+    await expect(page.getByTestId('quick-play')).toHaveCount(0);
+    // two days done, today open, advanced level remembered
+    await seed(page, stateWith(2, V, { level: 'advanced' }, 1));
+    await page.reload();
+    const quick = page.getByTestId('quick-play');
+    await expect(quick).toContainText('Pustit dnešní priming');
+    await expect(quick).toContainText('Pokročilý · celé video');
+    await quick.click();
+    await expect(page.getByTestId('quick-play')).toContainText('Pokračovat v dnešním primingu');
+    await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.videoStartedFor).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    // basic level shows where it starts
+    await seed(page, stateWith(2, V, { level: 'basic' }, 1));
+    await page.reload();
+    await expect(page.getByTestId('quick-play')).toContainText('Základní · od 2:30');
+    // today done → gone
+    await seed(page, stateWith(3, V));
+    await page.reload();
+    await expect(page.getByText('Dnes hotovo')).toBeVisible();
+    await expect(page.getByTestId('quick-play')).toHaveCount(0);
+  });
+
   test('after 100 check-ins the balance is ≈ 10 008 Kč', async ({ page }) => {
     await seed(page, stateWith(100));
     await page.goto('/');

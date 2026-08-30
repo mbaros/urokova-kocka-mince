@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-30] Prompt #21 — rychlé spuštění videa
+
+### Added
+- Nahoře na Dnes (pod kartou zůstatku) zlaté tlačítko „▶ Pustit dnešní priming · Pokročilý · celé video · jako minule“ — jedno klepnutí sjede ke kartě check-inu a spustí video na naposledy zvoleném levelu (na iPhonu rovnou na celou obrazovku). Ukazuje se jen když výzva běží, dnešek není hotový, existuje video a proběhl aspoň jeden den (poprvé se level vybírá na kartě). Po spuštění mění text na „Pokračovat v dnešním primingu“.
+
+### Tests
+- +1 scénář (skryto den 1, level v popisku, klepnutí = video started, skryto po check-inu). Celkem 26 Playwright + 8 API.
+
+---
+
 ## [2026-08-30] Prompt #20 — listování mezi lekcemi
 
 ### Added

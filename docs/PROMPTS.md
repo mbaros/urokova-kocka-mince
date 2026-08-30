@@ -142,3 +142,16 @@ Kompletní přepis `app/index.html` (server sync, YouTube embed, oslava, odměny
 **Files changed:** `app/index.html`, `tests/e2e/smoke.spec.js`, `docs/*`
 
 ---
+
+## 2026-08-30 — Prompt #21
+
+**User prompt:**
+> Nahoře na obrazovce chci grafický prvek, který jedním klikem spustí dnešní video (stejná verze jako včera, základní/pokročilá), pokud ještě není přehrané. Poprvé se neukazuje.
+
+**Plan:** `#quickPlay` pod kartou zůstatku → `renderQuickPlay()` v `renderCheckin` → klik = scroll + `video.play()` (+ iOS fullscreen) / `ytPlayer.playVideo()` → test → deploy.
+
+**Summary of what was done:** Viz CHANGELOG #21.
+
+**Files changed:** `app/index.html`, `tests/e2e/smoke.spec.js`, `docs/*`
+
+---

@@ -99,6 +99,13 @@ h3{font-size:17px}
 .btn:active{transform:scale(.98)}
 .btn.primary{background:var(--ink);color:var(--bg)}
 .btn.gold{background:var(--gold);color:#241F33}
+.quick{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:#241F33;background:linear-gradient(135deg,var(--gold),#E8B84A);border:0;border-radius:18px;padding:12px 14px;margin:0 0 12px;box-shadow:0 6px 18px color-mix(in srgb,var(--gold) 35%,transparent);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.quick:active{transform:scale(.985)}
+.quick .pl{flex:none;width:44px;height:44px;border-radius:50%;background:#241F33;color:var(--gold);display:grid;place-items:center;font-size:18px;padding-left:3px;animation:pulse 2.2s ease-in-out infinite}
+.quick b{display:block;font-family:"Baloo 2";font-size:17px;font-weight:700;line-height:1.15}
+.quick small{display:block;font-size:12px;font-weight:700;opacity:.8;margin-top:2px}
+.quick .go{margin-left:auto;font-size:20px;font-weight:700;opacity:.7}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(36,31,51,.35)}50%{box-shadow:0 0 0 8px rgba(36,31,51,0)}}
 .btn.ghost{background:var(--surface2);color:var(--ink)}
 .btn.coral{background:var(--coral);color:#fff}
 .btn[disabled]{opacity:.45;cursor:not-allowed}
@@ -296,6 +303,7 @@ details summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--muted)
       <div class="meta"><span>start</span><span>fáze 1</span><span>fáze 2</span><span>cíl ≈ <span id="goalTxt">10 000</span> Kč</span></div>
     </div>
 
+    <div id="quickPlay"></div>
     <div id="offerSlot"></div>
 
     <div class="card" style="padding:14px 14px 12px">
@@ -679,8 +687,20 @@ const parseMmss=v=>{const m=String(v||'').trim().match(/^(\d+):(\d{1,2})$/);if(m
 const mmss=ms=>{const s=Math.ceil(ms/1000);return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`};
 function markVideoStarted(t){if(S.videoStartedFor!==t){S.videoStartedAt=Date.now();S.videoStartedFor=t;save()}}
 
+function renderQuickPlay(){
+  const q=$('quickPlay'); if(!q)return; const t=todayStr(), done=S.checkins.some(c=>c.date===t), k=S.checkins.length;
+  const hasVideo=!!(serverVideo||ytId(S.settings.videoUrl));
+  if(beforeStart()||done||k<1||!hasVideo||k>=N()){q.innerHTML='';return}
+  const adv=S.level==='advanced', started=S.videoStartedFor===t;
+  q.innerHTML=`<button type="button" class="quick" id="quickBtn" data-testid="quick-play"><span class="pl">▶</span><span><b>${started?'Pokračovat v dnešním primingu':'Pustit dnešní priming'}</b><small>${adv?'Pokročilý · celé video':'Základní · od '+mmss((S.settings.basicStart||0)*1000)} · jako minule</small></span><span class="go">›</span></button>`;
+  $('quickBtn').onclick=()=>{const card=$('checkinCard'); card.scrollIntoView({behavior:'smooth',block:'start'});
+    const v=$('localVideo');
+    if(v){const p=v.play(); if(p&&p.catch)p.catch(()=>{}); try{if(v.webkitEnterFullscreen&&!v.webkitDisplayingFullscreen)v.webkitEnterFullscreen()}catch(e){}}
+    else if(ytPlayer&&ytPlayer.playVideo){try{ytPlayer.playVideo()}catch(e){}}
+    markVideoStarted(t); setTimeout(renderQuickPlay,400)};
+}
 function renderCheckin(){
-  clearInterval(window._cnt);
+  clearInterval(window._cnt); renderQuickPlay();
   const el=$('checkinCard'), t=todayStr(), done=S.checkins.some(c=>c.date===t), k=S.checkins.length;
   if(k>=N()){el.innerHTML=`<h2>Hotovo — sto dní! 🦁</h2><p class="small" style="margin:6px 0 0">Zůstatek ${kc(balance(),0)} je tvůj. A teď víš, jak vypadá křivka, kterou většina lidí nikdy nedokončí.</p>`;return}
   if(beforeStart()){
