@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-30] Prompt #20 — listování mezi lekcemi
+
+### Added
+- V otevřené lekci jsou karty „Včera · 2“ / „Dnes · 3“ (obecně „Myšlenka · N“) tlačítka: klepnutí vymění lekci přímo v panelu (krátké posunutí do strany), funguje i přejetí prstem doleva/doprava. Zítřejší lekce zůstává zamčená „🔒 až po videu“, před první je „Začátek“, za stou „konec školy“. Každá takto navštívená lekce se počítá jako přečtená (+1 ⭐). Platí v oslavě po videu i ve Škole.
+
+### Tests
+- +1 scénář: den 3 → včera → myšlenka 1 (bez „předchozí“) → zpět; zamčené zítra; `school.read = [1,2,3]`. Celkem 25 Playwright + 8 API.
+
+---
+
 ## [2026-08-30] Prompt #19 — lekce 3 a úvody kvízů
 
 ### Changed

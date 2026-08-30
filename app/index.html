@@ -210,6 +210,17 @@ details summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--muted)
 .lesson-nav{display:flex;gap:8px;margin-top:14px;text-align:left}
 .lesson-nav>div{flex:1;background:var(--surface2);border-radius:14px;padding:10px 12px;min-width:0}
 .lesson-nav b{display:block;font-size:13px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lesson-nav .nav-card{flex:1;min-width:0;text-align:left;font:inherit;color:inherit;background:var(--surface2);border:1.5px solid transparent;border-radius:14px;padding:10px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lesson-nav button.nav-card{border-color:color-mix(in srgb,var(--gold) 45%,transparent);box-shadow:0 1px 0 color-mix(in srgb,var(--gold) 25%,transparent)}
+.lesson-nav button.nav-card .eyebrow{color:var(--gold)}
+.lesson-nav button.nav-card:active{transform:scale(.97)}
+.lesson-nav .nav-card.next{text-align:right}
+.lesson-nav .nav-card.off{opacity:.65}
+.lesson-nav .nav-card.off b{color:var(--muted)}
+.lesson-dots{font-size:11px;color:var(--muted);margin-top:6px;font-weight:700;letter-spacing:.02em}
+.lesson{transition:transform .16s ease,opacity .16s ease}
+.lesson.out-left{transform:translateX(-28px);opacity:0}.lesson.out-right{transform:translateX(28px);opacity:0}
+.lesson.in-right{transform:translateX(28px);opacity:0;transition:none}.lesson.in-left{transform:translateX(-28px);opacity:0;transition:none}
 .lesson-p{margin:10px 0 0;color:var(--ink2);font-size:15px;line-height:1.5;text-align:left}
 .stars{display:flex;justify-content:space-between;align-items:center;margin-top:14px;background:var(--gold-soft);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:800}
 .chapter{display:inline-flex;font-size:11px;font-weight:800;background:var(--surface2);border:1.5px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--ink2)}
@@ -770,6 +781,7 @@ function schoolTitle(){let t=TITLES[0];TITLES.forEach(x=>{if(stars()>=x[0])t=x})
 function nextTitle(){return TITLES.find(x=>x[0]>stars())}
 function chapterOf(n){return CHAPTERS.filter(c=>c.from<=n).pop()}
 function lessonUnlocked(n){return S.checkins.length>=n}
+function todayLessonN(){return Math.min(S.checkins.length,LESSONS.length)}
 function markRead(n){if(!S.school.read.includes(n)){S.school.read.push(n);save([{type:'lesson-read',n}])}}
 function lessonHtml(l,opts={}){
   const ch=chapterOf(l.n), prev=LESSONS[l.n-2], next=LESSONS[l.n], q=l.quiz, done=S.school.quiz[l.n];
@@ -780,7 +792,8 @@ function lessonHtml(l,opts={}){
     <h2>${l.t}</h2>
     <p class="lesson-p">${l.p}</p>
     ${q?`<div class="quiz" data-testid="quiz"><div style="font-weight:800;font-size:15px;text-align:left;margin-top:4px">🧠 ${q.q}</div>${q.opts.map((o,i)=>`<button data-pick="${i}" ${done?'disabled':''} class="${done?(i===q.a?'ok':(done.pick===i?'bad':'')):''}">${'ABC'[i]} · ${o}${done&&i===q.a?'<span>✓</span>':''}</button>`).join('')}</div>${done?`<div class="why ${done.ok?'':'bad'}"><b>${done.ok?'Přesně!':'Skoro.'}</b> ${q.why}</div>`:'<div id="why"></div>'}`:''}
-    <div class="lesson-nav"><div><span class="eyebrow">Včera</span><b>${prev?prev.t:'—'}</b></div><div><span class="eyebrow">Zítra</span><b style="${lessonUnlocked(l.n+1)?'':'color:var(--muted)'}">${next?(lessonUnlocked(l.n+1)?next.t:'🔒 po dalším videu'):'konec školy 🎓'}</b></div></div>
+    <div class="lesson-nav">${prev?`<button type="button" class="nav-card" data-go="${prev.n}" data-testid="lesson-prev"><span class="eyebrow">‹ ${prev.n===todayLessonN()-1&&l.n===todayLessonN()?'Včera':'Myšlenka'} · ${prev.n}</span><b>${prev.t}</b></button>`:`<div class="nav-card off"><span class="eyebrow">Začátek</span><b>první myšlenka</b></div>`}${next?(lessonUnlocked(l.n+1)?`<button type="button" class="nav-card next" data-go="${next.n}" data-testid="lesson-next"><span class="eyebrow">${next.n===todayLessonN()?'Dnes':'Myšlenka'} · ${next.n} ›</span><b>${next.t}</b></button>`:`<div class="nav-card off" data-testid="lesson-next-locked"><span class="eyebrow">Zítra · ${next.n}</span><b>🔒 až po videu</b></div>`):`<div class="nav-card off"><span class="eyebrow">Konec</span><b>konec školy 🎓</b></div>`}</div>
+    <div class="lesson-dots" aria-hidden="true">${l.n>1?'← ':''}přejížděj prstem${next&&lessonUnlocked(l.n+1)?' →':''}</div>
     <div class="stars"><span>⭐ ${isNew?'+1 hvězdička za přečtení':'už přečteno'}${q&&!done?' · +2 za kvíz':''}</span><span class="small">celkem ${stars()} · ${schoolTitle()[1]}</span></div>
     <button class="btn ghost" style="margin-top:12px" data-ask="${l.n}" data-testid="lesson-ask">💬 Zeptat se Mince</button>
   </div>`;
@@ -795,6 +808,10 @@ function bindLesson(l){
     if(ok)confetti(90); const st=root.querySelector('.stars .small');if(st)st.textContent=`celkem ${stars()} · ${schoolTitle()[1]}`; const s1=root.querySelector('.stars span');if(s1)s1.textContent=ok?'⭐ +2 za správný kvíz':'⭐ za kvíz nic — příště';
   }));
   const a=root.querySelector('[data-ask]');if(a)a.addEventListener('click',()=>openChat(l));
+  const go=n=>{const t=LESSONS[n-1];if(!t||!lessonUnlocked(n))return;markRead(l.n);const dir=n>l.n?1:-1;root.classList.add(dir>0?'out-left':'out-right');setTimeout(()=>{root.outerHTML=lessonHtml(t);const nr=document.querySelector('.lesson[data-n="'+t.n+'"]');nr.classList.add(dir>0?'in-right':'in-left');bindLesson(t);markRead(t.n);$('sheet').scrollTop=0;requestAnimationFrame(()=>nr.classList.remove('in-right','in-left'))},160)};
+  root.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.go)));
+  let sx=null,sy=null;root.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+  root.addEventListener('touchend',e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;sx=null;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5)go(l.n+(dx<0?1:-1))},{passive:true});
 }
 function openLesson(l){openSheet(`<div class="center">${lessonHtml(l)}<button class="btn primary" style="margin-top:14px" id="lessonClose">Super, díky</button></div>`,()=>{$('sheet').classList.add('center');bindLesson(l);$('lessonClose').onclick=()=>{markRead(l.n);closeSheet();renderSchool()}})}
 function renderSchool(){

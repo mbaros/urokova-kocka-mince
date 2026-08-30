@@ -129,3 +129,16 @@ Kompletní přepis `app/index.html` (server sync, YouTube embed, oslava, odměny
 **Files changed:** `app/lessons.js`, `tests/e2e/smoke.spec.js`, `docs/*`
 
 ---
+
+## 2026-08-30 — Prompt #20
+
+**User prompt:**
+> Na kartu „Včera“ v lekci se nedá zmáčknout — chtěl bych se vracet ke včerejší lekci a přecházet mezi nimi. Nadesignuj flow a implementuj.
+
+**Plan:** karty Včera/Zítra → tlačítka s číslem a názvem (odemčené zlaté, zamčené šedé se zámkem) → výměna lekce v panelu s animací + swipe → čtení se počítá → test → deploy.
+
+**Summary of what was done:** Viz CHANGELOG #20.
+
+**Files changed:** `app/index.html`, `tests/e2e/smoke.spec.js`, `docs/*`
+
+---

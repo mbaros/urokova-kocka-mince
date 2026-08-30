@@ -399,6 +399,29 @@ test.describe('Úroková kočka smoke', () => {
     await expect(page.locator('#checkinCard')).toContainText('51 Kč');
   });
 
+  test('inside a lesson you can step to yesterday and back; locked tomorrow stays locked', async ({ page }) => {
+    await seed(page, stateWith(3));
+    await page.goto('/');
+    await page.getByTestId('tab-school').click();
+    await page.getByTestId('chapter-1').click();
+    await page.locator('[data-open="3"]').click();
+    await expect(page.getByTestId('lesson')).toContainText('Zaplať nejdřív sobě');
+    await expect(page.getByTestId('lesson-prev')).toContainText('Včera · 2');
+    await expect(page.getByTestId('lesson-next-locked')).toContainText('až po videu');
+    await expect(page.getByTestId('lesson-next')).toHaveCount(0);
+    await page.getByTestId('lesson-prev').click();
+    await expect(page.getByTestId('lesson')).toContainText('Příjem a výdaj');
+    await expect(page.getByTestId('lesson-next')).toContainText('Dnes · 3');
+    await page.getByTestId('lesson-prev').click();
+    await expect(page.getByTestId('lesson')).toContainText('Co jsou vlastně peníze');
+    await expect(page.getByTestId('lesson-prev')).toHaveCount(0);          // nothing before lesson 1
+    await page.getByTestId('lesson-next').click();
+    await expect(page.getByTestId('lesson')).toContainText('Příjem a výdaj');
+    await page.locator('#lessonClose').click();
+    // every lesson visited counts as read
+    await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.school?.read.sort()).toEqual([1, 2, 3]);
+  });
+
   test('a lesson reopened from Škola counts as read and its chat carries the lesson context', async ({ page }) => {
     await seed(page, stateWith(3));
     await page.goto('/');
