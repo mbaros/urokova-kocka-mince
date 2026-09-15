@@ -155,3 +155,16 @@ Kompletní přepis `app/index.html` (server sync, YouTube embed, oslava, odměny
 **Files changed:** `app/index.html`, `tests/e2e/smoke.spec.js`, `docs/*`
 
 ---
+
+## 2026-09-15 — Prompt #22
+
+**User prompt:**
+> Oprav Terezce streak — vynechaný 10. 9. jí započti jako bonus, ať má řadu celou. A ať se jí to při dalším otevření napíše s konfetami.
+
+**Plan:** doplnit check-in 10. 9. do `data/state.json` (záloha + event `bonus-day`) → obecný `state.notice` + `showNotice()` s konfetami → test → deploy → nastavit vzkaz terezce.
+
+**Summary of what was done:** Viz CHANGELOG #22.
+
+**Files changed:** `app/index.html`, `tests/e2e/smoke.spec.js`, `docs/*` + serverová data terezky
+
+---

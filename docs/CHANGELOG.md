@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-15] Prompt #22 — jednorázový vzkaz (bonus)
+
+### Added
+- `state.notice` = `{id,emoji,from,title,text}`: při dalším otevření aplikace (po tutoriálu, mimo jiné otevřené panely) se vzkaz ukáže s konfetami; po zavření se smaže ze serveru (event `notice-shown`). Rodič ho nastaví zápisem do `state.json` — použito pro bonusový den 10. 9. u terezky (event `bonus-day`).
+
+### Tests
+- +1 scénář (vzkaz se ukáže, po zavření zmizí a už se neukáže). Celkem 27 Playwright + 8 API.
+
+---
+
 ## [2026-08-30] Prompt #21 — rychlé spuštění videa
 
 ### Added

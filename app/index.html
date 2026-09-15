@@ -412,6 +412,7 @@ const DEFAULTS={
   videoStartedFor:null,
   level:'basic',       // 'basic' = video od basicStart do konce · 'advanced' = celé video
   tutorialDone:false,
+  notice:null,         // jednorázový vzkaz {id,emoji,title,text} — ukáže se při dalším otevření (s konfetami) a smaže se
   school:{read:[],quiz:{},asked:0,seenAnswers:[]}   // Mincina škola: přečtené myšlenky, odpovědi na kvízy {n:{pick,ok}}, počet otázek
 };
 let S=loadLocal();
@@ -1044,7 +1045,16 @@ window.tutorial=tutorial;
 /* ============ BOOT ============ */
 window.closeSheet=closeSheet;
 render();
-pullSync().then(async()=>{if(!S.tutorialDone&&!$('overlay').classList.contains('on'))tutorial();await loadInbox();renderSchool()});
+function showNotice(){
+  const n=S.notice; if(!n||!n.text)return false;
+  confetti(240);
+  openSheet(`<div class="center" data-testid="notice"><div class="tut-ic">${esc(n.emoji||'💌')}</div><div class="eyebrow">${esc(n.from||'Vzkaz pro tebe')}</div><h2 style="margin-top:6px">${esc(n.title||'')}</h2><p class="small" style="margin:10px 0 0">${esc(n.text)}</p><button class="btn primary" style="margin-top:16px" id="noticeOk" data-testid="notice-ok">Jéé, díky ❤️</button></div>`,()=>{
+    $('sheet').classList.add('center');
+    $('noticeOk').onclick=()=>{const id=n.id;S.notice=null;save([{type:'notice-shown',id}]);closeSheet();confetti(120)};
+  });
+  return true;
+}
+pullSync().then(async()=>{if(!S.tutorialDone&&!$('overlay').classList.contains('on'))tutorial();else if(!$('overlay').classList.contains('on'))showNotice();await loadInbox();renderSchool()});
 window.addEventListener('resize',()=>{if(tab==='chart')drawChart()});
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>drawChart());
 </script>

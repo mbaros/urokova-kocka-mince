@@ -449,6 +449,21 @@ test.describe('Úroková kočka smoke', () => {
     await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.school?.read.sort()).toEqual([1, 2, 3]);
   });
 
+  test('a one-time notice from dad shows with confetti on open and never again', async ({ page }) => {
+    await seed(page, stateWith(3, {}, { notice: { id: 'bonus-1', emoji: '🔥', from: 'Vzkaz od taťky', title: 'Perfektní řada!', text: 'Držíš to skvěle.' } }));
+    await page.goto('/');
+    const notice = page.getByTestId('notice');
+    await expect(notice).toContainText('Perfektní řada!');
+    await expect(notice).toContainText('Vzkaz od taťky');
+    await page.getByTestId('notice-ok').click();
+    await expect(notice).toHaveCount(0);
+    // cleared on the server → does not show again
+    await expect.poll(async () => (await (await page.request.get('/api/state')).json()).state.notice).toBe(null);
+    await page.reload();
+    await page.waitForTimeout(600);
+    await expect(page.getByTestId('notice')).toHaveCount(0);
+  });
+
   test('a lesson reopened from Škola counts as read and its chat carries the lesson context', async ({ page }) => {
     await seed(page, stateWith(3));
     await page.goto('/');
